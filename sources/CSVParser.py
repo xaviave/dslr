@@ -6,6 +6,8 @@ import argparse
 import pandas as pd
 import numpy as np
 
+from sources.ArgParser import ArgParser
+
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -18,7 +20,7 @@ class CSVParser:
     header: list
     df: pd.DataFrame
     raw_data: pd.DataFrame
-    args: argparse.Namespace
+    args: ArgParser
     # not analysed for now
     ANALYZED_HEADER: np.ndarray = [
         "First Name",
@@ -40,7 +42,7 @@ class CSVParser:
         "Flying",
     ]
 
-    def __init__(self, args: argparse.Namespace):
+    def __init__(self, args: ArgParser):
         self.args = args
 
     def _check_header(self):
