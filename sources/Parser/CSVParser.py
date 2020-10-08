@@ -24,21 +24,21 @@ class CSVParser(Visualiser):
     # not analysed for now
     # better if we take this from a file
     ANALYZED_HEADER: np.ndarray = [
-            "Best Hand",
-            "Arithmancy",
-            "Astronomy",
-            "Herbology",
-            "Defense Against the Dark Arts",
-            "Divination",
-            "Muggle Studies",
-            "Ancient Runes",
-            "History of Magic",
-            "Transfiguration",
-            "Potions",
-            "Care of Magical Creatures",
-            "Charms",
-            "Flying",
-        ]
+        "Best Hand",
+        "Arithmancy",
+        "Astronomy",
+        "Herbology",
+        "Defense Against the Dark Arts",
+        "Divination",
+        "Muggle Studies",
+        "Ancient Runes",
+        "History of Magic",
+        "Transfiguration",
+        "Potions",
+        "Care of Magical Creatures",
+        "Charms",
+        "Flying",
+    ]
 
     def _check_header(self):
         if not all(h in self.header for h in self.ANALYZED_HEADER):
