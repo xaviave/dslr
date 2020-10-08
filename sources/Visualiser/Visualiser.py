@@ -85,7 +85,7 @@ class Visualiser:
             ],
         }
 
-    def _bar_visualizer(self, head):
+    def _histogram_visualizer(self, head):
         hands = self._process_bar_data(self.raw_data, head)
         houses = set(self.raw_data.loc[:, "Hogwarts House"])
         x = np.arange(len(houses))
@@ -125,7 +125,7 @@ class Visualiser:
     def _advanced_visualizer(self, header):
         logging.info("Creating tabs in pdf...")
         func = {
-            "Best Hand": self._bar_visualizer,
+            "Best Hand": self._histogram_visualizer,
             "Birthday": self._date_visualizer,
         }
         figures = [self._text_page()]
