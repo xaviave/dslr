@@ -26,11 +26,12 @@ class ArgParser:
             default=self.default,
         )
         parser.add_argument("-p", action="store_true", help="Render the progression")
+        parser.add_argument("-v", action="store_true", help="Render a tab to vizualize data")
         self.args = parser.parse_args()
 
     def _get_options(self):
         self.file_name = self.args.csv_file
-        self.options = {"prog": self.args.p}
+        self.options = {"prog": self.args.p, "visu": self.args.v}
 
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
