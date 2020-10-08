@@ -4,7 +4,7 @@ from sources.CSVParser import CSVParser
 
 def main():
     args = ArgParser()
-    reader = CSVParser(args)
+    reader = CSVParser(args.args)
     reader.csv_parser()
 
 

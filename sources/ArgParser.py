@@ -11,7 +11,12 @@ class ArgParser:
     options: dict
     file_name: str
     args: argparse.Namespace
-    default: str = "data/datasets/dataset_train.csv"
+    default: str = os.path.join("data", "datasets", "dataset_train.csv")
+
+    def __init__(self):
+        self.data = {}
+        self._init_argparse()
+        self._get_options()
 
     def _init_argparse(self):
         """
@@ -30,15 +35,9 @@ class ArgParser:
 
     def _get_options(self):
         self.file_name = self.args.csv_file
-        self.options = {"prog": self.args.p}
-
+        self.options = {"progress": self.args.p}
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
-        elif not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":
-            logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file.")
-            sys.exit(0)
-
-    def __init__(self):
-        self.data = {}
-        self._init_argparse()
-        self._get_options()
+        if not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":
+            logging.error("The file doesn't exist or is in the wrong format.\nProvide a CSV file")
+            sys.exit(-1)
