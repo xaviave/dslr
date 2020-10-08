@@ -11,7 +11,7 @@ class ArgParser:
     options: dict
     file_name: str
     args: argparse.Namespace
-    default: str = "data/datasets/dataset_train.csv"
+    default: str = os.path.join("data", "datasets", "dataset_train.csv")
 
     def _init_argparse(self):
         """
@@ -26,20 +26,26 @@ class ArgParser:
             default=self.default,
         )
         parser.add_argument("-p", action="store_true", help="Render the progression")
-        parser.add_argument("-v", action="store_true", help="Render a tab to vizualize data")
+        parser.add_argument(
+            "-v", action="store_true", help="Render a tab to vizualize data"
+        )
         self.args = parser.parse_args()
 
     def _get_options(self):
         self.file_name = self.args.csv_file
-        self.options = {"prog": self.args.p, "visu": self.args.v}
+        self.options = {"progress": self.args.p, "visu": self.args.v}
 
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
-        elif not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":
-            logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file.")
-            sys.exit(0)
+        if (
+            not os.path.exists(self.file_name)
+            or os.path.splitext(self.file_name)[1] != ".csv"
+        ):
+            logging.error(
+                "The file doesn't exist or is in the wrong format\nProvide a CSV file"
+            )
+            sys.exit(-1)
 
     def __init__(self):
-        self.data = {}
         self._init_argparse()
         self._get_options()

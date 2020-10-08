@@ -1,9 +1,6 @@
-import os
-import sys
-import PyQt5
 import logging
-import argparse
-import datetime
+import sys
+
 import matplotlib
 
 import numpy as np
@@ -16,65 +13,19 @@ from matplotlib.backends.backend_pdf import PdfPages
 logging.getLogger().setLevel(logging.INFO)
 
 
-class CSVParser:
-    """
-    Need to analyse the dataset to highlight the usefull data and create the ANALYZED_HEADER parameter
-    All the logisitc Reference is based on this paramter
-    """
-
-    header: list
-    df: pd.DataFrame
+class Visualiser:
     raw_data: pd.DataFrame
-    args: argparse.Namespace
-
-    # not analysed for now
-    # better if we take this from a file
-    ANALYZED_HEADER: np.ndarray = [
-        # "Birthday",
-        "Best Hand",  # need to change left and right to binary value
-        "Arithmancy",
-        "Astronomy",
-        "Herbology",
-        "Defense Against the Dark Arts",
-        "Divination",
-        "Muggle Studies",
-        "Ancient Runes",
-        "History of Magic",
-        "Transfiguration",
-        "Potions",
-        "Care of Magical Creatures",
-        "Charms",
-        "Flying",
-    ]
-
-    def _check_header(self):
-        if not all(h in self.header for h in self.ANALYZED_HEADER):
-            logging.error("CSV file header doesn't contain enought data to analyse the dataset")
-            sys.exit(0)
-
-    def _get_csv_file(self):
-        logging.info(f"Reading dataset from CSV file: {self.args.file_name}")
-        self.raw_data = pd.read_csv(f"{os.path.abspath(self.args.file_name)}")
-        self.header = self.raw_data.columns.values
-        self._check_header()
-
-    def _as_df(self):
-        self.df = pd.DataFrame(data=self.raw_data, columns=self.ANALYZED_HEADER)
-        if "Birthday" in self.df.columns:
-            self.df["Birthday"] = self.df["Birthday"].apply(
-                lambda x: datetime.datetime.strptime(x, "%Y-%m-%d")
-            )
 
     def _save_as_pdf(self, figures):
         with PdfPages(f"data_visalizer{len(figures)}.pdf") as pdf:
             for f in figures:
-                pdf.savefig(f)
+                pdf.savefig(f, bbox_inches='tight')
 
     def _scatter_visualizer(self, head):
         fig = plt.figure()
         plt.scatter(
             x=tuple(self.raw_data.loc[:, "Hogwarts House"]),
-            y=tuple(self.df.loc[:, head]),
+            y=tuple(self.raw_data.loc[:, head]),
         )
         return fig
 
@@ -157,38 +108,33 @@ class CSVParser:
             color="black",
             transform=ax.transAxes,
         )
+        plt.axis('off')
         return fig
 
-    def _update_tab(self, head, func):
-        print(head)
+    @staticmethod
+    def _update_tab(head, func):
         fig = func(head)
         plt.title(f"Hogwarts House compared to '{head}")
         plt.close()
         return fig
 
-    def _advanced_visualizer(self):
+    def _advanced_visualizer(self, header):
         logging.info("Creating tabs in pdf...")
         func = {
             "Best Hand": self._bar_visualizer,
             "Birthday": self._date_visualizer,
         }
         figures = [self._text_page()]
-        for head in self.ANALYZED_HEADER:
-            figures.append(self._update_tab(head, func.get(head, self._scatter_visualizer)))
+        for head in header:
+            figures.append(
+                self._update_tab(head, func.get(head, self._scatter_visualizer))
+            )
         self._save_as_pdf(figures)
 
-    def __init__(self, args: argparse.Namespace):
-        self.args = args
-
-    def visualizer(self):
-        logging.info(self.df.head())
-        if "visu" in self.args.options.keys():
-            matplotlib.use("pdf")
-            self._advanced_visualizer()
-        # need to create the data visializer with graph and numpy
-        pass
-
-    def csv_parser(self):
-        self._get_csv_file()
-        self._as_df()
-        self.visualizer()
+    def visualizer(self, header):
+        if self.raw_data.empty:
+            logging.error("raw_data not init")
+            sys.exit(-1)
+        logging.info(self.raw_data.head())
+        matplotlib.use("pdf")
+        self._advanced_visualizer(header)

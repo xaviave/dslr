@@ -1,5 +1,5 @@
-from sources.ArgParser import ArgParser
-from sources.CSVParser import CSVParser
+from Parser.ArgParser import ArgParser
+from Parser.CSVParser import CSVParser
 
 
 def main():
