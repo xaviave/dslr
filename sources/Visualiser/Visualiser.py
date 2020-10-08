@@ -131,6 +131,9 @@ class Visualiser:
             )
         self._save_as_pdf(figures)
 
+    def __init__(self, raw_data):
+        self.raw_data = raw_data
+
     def visualizer(self, header):
         if self.raw_data.empty:
             logging.error("raw_data not init")

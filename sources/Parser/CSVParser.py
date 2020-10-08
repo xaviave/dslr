@@ -24,8 +24,7 @@ class CSVParser(Visualiser):
     # not analysed for now
     # better if we take this from a file
     ANALYZED_HEADER: np.ndarray = [
-            # "Birthday",
-            "Best Hand",  # need to change left and right to binary value
+            "Best Hand",
             "Arithmancy",
             "Astronomy",
             "Herbology",
