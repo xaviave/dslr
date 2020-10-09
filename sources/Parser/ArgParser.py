@@ -33,8 +33,7 @@ class ArgParser:
 
     def _get_options(self):
         self.file_name = self.args.csv_file
-        self.options = {"progress": self.args.p, "visu": self.args.v}
-
+        self.options = {"progress": self.args.p, "visual": self.args.v}
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
         if (

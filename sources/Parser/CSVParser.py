@@ -72,5 +72,5 @@ class CSVParser(Visualiser):
     def csv_parser(self):
         self._get_csv_file()
         self._as_df()
-        if "visu" in self.args.options.keys():
+        if "visual" in self.args.options.keys():
             self.visualizer(self.ANALYZED_HEADER)
