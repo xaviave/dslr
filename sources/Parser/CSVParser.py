@@ -42,7 +42,9 @@ class CSVParser(Visualiser):
 
     def _check_header(self):
         if not all(h in self.header for h in self.ANALYZED_HEADER):
-            logging.error("CSV file header doesn't contain enough data to analyse the dataset")
+            logging.error(
+                "CSV file header doesn't contain enough data to analyse the dataset"
+            )
             sys.exit(-1)
 
     def _get_csv_file(self):
