@@ -17,13 +17,12 @@ class CSVParser(Visualiser):
     Need to analyse the dataset to highlight the useful data and create the ANALYZED_HEADER parameter
     All the logistic Reference is based on this parameter
     """
-
     header: list
     args: ArgParser
     df: pd.DataFrame
     # not analysed for now
     # better if we take this from a file
-    ANALYZED_HEADER: np.ndarray = [
+    ANALYZED_HEADER: np.ndarray = np.array([
         "Best Hand",
         "Arithmancy",
         "Astronomy",
@@ -38,7 +37,7 @@ class CSVParser(Visualiser):
         "Care of Magical Creatures",
         "Charms",
         "Flying",
-    ]
+    ])
 
     def _check_header(self):
         if not all(h in self.header for h in self.ANALYZED_HEADER):
@@ -72,5 +71,5 @@ class CSVParser(Visualiser):
     def csv_parser(self):
         self._get_csv_file()
         self._as_df()
-        if "visual" in self.args.options.keys():
+        if self.args.options.get("visual"):
             self.visualizer(self.ANALYZED_HEADER)

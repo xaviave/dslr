@@ -27,7 +27,7 @@ class ArgParser:
         )
         parser.add_argument("-p", action="store_true", help="Render the progression")
         parser.add_argument(
-            "-v", action="store_true", help="Render a tab to vizualize data"
+            "-v", action="store_true", help="Render a tab to visualize data"
         )
         self.args = parser.parse_args()
 
