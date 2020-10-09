@@ -21,7 +21,7 @@ class CSVParser(Visualiser):
     header: list
     args: ArgParser
     df: pd.DataFrame
-    # not analysed for now
+
     # better if we take this from a file
     ANALYZED_HEADER: np.ndarray = [
         "Best Hand",
@@ -56,7 +56,7 @@ class CSVParser(Visualiser):
         except Exception:
             logging.error(f"Error while processing {self.args.file_name}")
             sys.exit(-1)
-        self.header = self.raw_data.columns.values
+        self.header = list(self.raw_data.columns.values)
         self._check_header()
 
     def _as_df(self):
@@ -67,10 +67,11 @@ class CSVParser(Visualiser):
             )
 
     def __init__(self, args: ArgParser):
+        super().__init__(pd.DataFrame)
         self.args = args
 
     def csv_parser(self):
         self._get_csv_file()
         self._as_df()
-        if "visu" in self.args.options.keys():
+        if vars(self.args.args).get("visualiser"):
             self.visualizer(self.ANALYZED_HEADER)
