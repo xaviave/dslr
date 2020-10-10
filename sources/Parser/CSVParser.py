@@ -52,6 +52,9 @@ class CSVParser(Visualiser):
             self.raw_data = pd.read_csv(
                 f"{os.path.abspath(self.args.file_name)}"
             )  # think about error handler parameter
+            # dropna is maybe better to don't modify the global value of the dataset
+            self.raw_data.fillna(0, inplace=True)
+            # self.raw_data.dropna(inplace=True)
         except Exception:
             logging.error(f"Error while processing {self.args.file_name}")
             sys.exit(-1)
