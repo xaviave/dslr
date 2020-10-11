@@ -89,11 +89,9 @@ class Describe(CSVParser):
     @staticmethod
     def _mean(array):
         try:
-            total = sum(array)
-            mean = total / len(array)
+            return sum(array) / len(array)
         except (TypeError, ZeroDivisionError):
             return "NaN"
-        return mean
 
     def _get_specific(self, func, *args):
         return {
