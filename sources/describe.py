@@ -124,13 +124,3 @@ class Describe(CSVParser):
         # make a list or parameter to chose feature to print.
         self._print_header()
         self._print_feature()
-
-
-def main():
-    args = ArgParser()
-    describer = Describe(args)
-    describer.describe()
-
-
-if __name__ == "__main__":
-    main()
