@@ -3,6 +3,7 @@ import logging
 from Parser.ArgParser import ArgParser
 from Parser.CSVParser import CSVParser
 from math import sqrt, floor, ceil
+from copy import deepcopy
 
 
 logging.getLogger().setLevel(logging.INFO)
@@ -107,20 +108,36 @@ class Describer(CSVParser):
             else:
                 self.content_vars[desc] = self._get_specific(func)
 
-    def _print_header(self):
-        print("%6s" % ' ', end='')
-        for feature in self.header:
-            print("%26s" % feature, end='')
-        print('')
+    @staticmethod
+    def _print_header(headers, to_print):
+        print(f"{' ':>6}", end='')
+        for feature in headers:
+            print(f"{feature if not to_print else '_' * len(feature):>32}", end='')
+        print()
 
-    def _print_feature(self):
-        for var in self.desc_vars:
-            print("%6s" % var, end='')
-            for feature in self.header:
-                print("%26s" % self.content_vars[var].get(feature), end='')
-            print('')
+    @staticmethod
+    def _print_desc(headers, desc_vars, content_vars):
+        for var in desc_vars:
+            print(f"{var:>6}", end='')
+            for feature in headers:
+                try:
+                    print(f"{content_vars[var].get(feature):>32.6f}", end='')  # for float
+                except ValueError:
+                    print(f"{content_vars[var].get(feature):>32}", end='')
+            print()  # print newline
 
     def describe(self):
         # make a list or parameter to chose feature to print.
-        self._print_header()
-        self._print_feature()
+        print(f"{self.__class__.__name__}:")
+        copy_header = deepcopy(self.header)
+        while copy_header:  # to get only 5 header per 5 to print
+            tmp_header = [
+                copy_header.pop(0)
+                for _ in range(4)
+                if len(copy_header)
+                          ]
+            for to_print in range(2):
+                self._print_header(tmp_header, bool(to_print))
+            self._print_desc(tmp_header, self.desc_vars, self.content_vars)
+            if copy_header:
+                print('\n\n')
