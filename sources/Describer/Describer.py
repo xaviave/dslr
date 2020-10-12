@@ -18,33 +18,57 @@ class Describer(CSVParser):
     def __init__(self, args: ArgParser):
         super().__init__(args)
         self.desc_vars = {
-            "count": len,
-            "mean": self._mean,
-            "std": self._std_dev,
-            "min": self._min,
-            "0.25": self._percentile,
-            "0.50": self._percentile,
-            "0.75": self._percentile,
-            "max": self._max,
-            "unique": self._unique,
+            "count": {
+                'func': len,
+                'param': {}
+            },
+            "mean": {
+                'func': self._mean,
+                'param': {}
+            },
+            "std": {
+                'func': self._std_dev,
+                'param': {}
+            },
+            "min": {
+                'func': self._min,
+                'param': {}
+            },
+            "25%": {
+                'func': self._percentile,
+                'param': {'value': 0.25}
+            },
+            "50%": {
+                'func': self._percentile,
+                'param': {'value': 0.50}
+            },
+            "75%": {
+                'func': self._percentile,
+                'param': {'value': 0.75}
+            },
+            "max": {
+                'func': self._max,
+                'param': {}
+            },
+            "unique": {
+                'func': self._unique,
+                'param': {}
+            },
         }
         self.csv_parser()
         self._set_val()
 
     @staticmethod
-    def _percentile(array, percent=0.50):
+    def _percentile(array, **kwargs):
         # can reduce sorting time by getting already sorted array
         array = array.sort_values(kind="mergesort").values
         try:
-            percent = float(percent)
-            k = (len(array) - 1) * percent
+            k = (len(array) - 1) * kwargs.get('value')
             f = floor(k)
             c = ceil(k)
             if f == c:
                 return array[int(k)]
-            d0 = array[int(f)] * (c - k)
-            d1 = array[int(c)] * (k - f)
-            return d0 + d1
+            return (array[int(f)] * (c - k)) + (array[int(c)] * (k - f))
         except (ValueError, TypeError):
             return "NaN"
 
@@ -94,19 +118,20 @@ class Describer(CSVParser):
         except (TypeError, ZeroDivisionError):
             return "NaN"
 
-    def _get_specific(self, func, *args):
+    def _get_specific(self, func):
         return {
-            feature: func(self.raw_data.get(feature), *args)
+            feature: func.get('func')(
+                self.raw_data.get(feature),
+                **func.get('param')
+            )
             for feature in self.header
         }
 
     def _set_val(self):
-        self.content_vars = {}
-        for desc, func in self.desc_vars.items():
-            if '.' in desc:  # if it's a float (percentile)
-                self.content_vars[desc] = self._get_specific(func, desc)
-            else:
-                self.content_vars[desc] = self._get_specific(func)
+        self.content_vars = {
+            desc: self._get_specific(func)
+            for desc, func in self.desc_vars.items()
+        }
 
     @staticmethod
     def _print_header(headers, to_print):
