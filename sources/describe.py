@@ -6,6 +6,7 @@ def main():
     args = ArgParser()
     reader = CSVParser(args)
     reader.csv_parser()
+    reader.describe()
 
 
 if "__main__" == __name__:

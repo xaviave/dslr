@@ -74,14 +74,8 @@ class Visualiser:
             for house in ["Slytherin", "Ravenclaw", "Gryffindor", "Hufflepuff"]
         ]
         return {
-            "right": [
-                (stat[index] == "Right").sum()
-                for index in range(4)
-            ],
-            "left": [
-                (stat[index] == "Left").sum()
-                for index in range(4)
-            ],
+            "right": [(stat[index] == "Right").sum() for index in range(4)],
+            "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
     def _histogram_visualizer(self, head):

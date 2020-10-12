@@ -50,12 +50,6 @@ class ArgParser:
             action="store_true",
             help="Render a tab to vizualize data",
         )
-        subparser_all.add_argument(
-            "-d",
-            "--describer",
-            action="store_true",
-            help="Describe the data in stdout"
-        )
         subparser_spe = subparser.add_parser(
             "spe_visualiser", help="Specific action for graph visaliser in PDF file"
         )

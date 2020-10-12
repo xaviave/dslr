@@ -18,27 +18,30 @@ class CSVParser(Visualiser, Describer):
     Need to analyse the dataset to highlight the useful data and create the ANALYZED_HEADER parameter
     All the logistic Reference is based on this parameter
     """
+
     header: list
     args: ArgParser
     df: pd.DataFrame
 
     # better if we take this from a file
-    ANALYZED_HEADER: np.ndarray = np.array([
-        "Best Hand",
-        "Arithmancy",
-        "Astronomy",
-        "Herbology",
-        "Defense Against the Dark Arts",
-        "Divination",
-        "Muggle Studies",
-        "Ancient Runes",
-        "History of Magic",
-        "Transfiguration",
-        "Potions",
-        "Care of Magical Creatures",
-        "Charms",
-        "Flying",
-    ])
+    ANALYZED_HEADER: np.ndarray = np.array(
+        [
+            "Best Hand",
+            "Arithmancy",
+            "Astronomy",
+            "Herbology",
+            "Defense Against the Dark Arts",
+            "Divination",
+            "Muggle Studies",
+            "Ancient Runes",
+            "History of Magic",
+            "Transfiguration",
+            "Potions",
+            "Care of Magical Creatures",
+            "Charms",
+            "Flying",
+        ]
+    )
 
     def _check_header(self):
         if not all(h in self.header for h in self.ANALYZED_HEADER):
@@ -70,14 +73,18 @@ class CSVParser(Visualiser, Describer):
             )
 
     def __init__(self, args: ArgParser):
-        Visualiser.__init__(self, pd.DataFrame)
         self.args = args
+        self._get_csv_file()
+        super(Visualiser).__init__(pd.DataFrame)
+        super(Describer).__init__()
 
     def csv_parser(self):
-        self._get_csv_file()
         self._as_df()
         if vars(self.args.args).get("visualiser"):
             self.visualizer(self.ANALYZED_HEADER)
-        if vars(self.args.args).get("describer"):
-            Describer.__init__(self, self.raw_data, self.header)
-            self.describe(self.header)
+
+    def describe(self, **kwargs):
+        # add checker for Describer init
+        Describer.describe(
+            data=self.raw_data, headers=kwargs.get("headers", self.header)
+        )
