@@ -1,7 +1,5 @@
 import logging
 
-from Parser.ArgParser import ArgParser
-from Parser.CSVParser import CSVParser
 from math import sqrt, floor, ceil
 from copy import deepcopy
 
@@ -9,14 +7,13 @@ from copy import deepcopy
 logging.getLogger().setLevel(logging.INFO)
 
 
-class Describer(CSVParser):
+class Describer:
     """
     Take a dataset in parameter and can display some information about it.
     """
     content_vars: dict
 
-    def __init__(self, args: ArgParser):
-        super().__init__(args)
+    def __init__(self, raw_data, headers):
         self.desc_vars = {
             "count": {
                 'func': len,
@@ -55,8 +52,9 @@ class Describer(CSVParser):
                 'param': {}
             },
         }
-        self.csv_parser()
-        self._set_val()
+        self.raw_data = raw_data
+        self.header = headers
+        self._set_val()  # to fill content_vars
 
     @staticmethod
     def _percentile(array, **kwargs):
@@ -135,7 +133,7 @@ class Describer(CSVParser):
 
     @staticmethod
     def _print_header(headers, to_print):
-        print(f"{' ':>6}", end='')
+        print(f"{' ':>9}", end='')
         for feature in headers:
             print(f"{feature if not to_print else '_' * len(feature):>32}", end='')
         print()
@@ -143,7 +141,7 @@ class Describer(CSVParser):
     @staticmethod
     def _print_desc(headers, desc_vars, content_vars):
         for var in desc_vars:
-            print(f"{var:>6}", end='')
+            print(f"{var:>8}", end=':')
             for feature in headers:
                 try:
                     print(f"{content_vars[var].get(feature):>32.6f}", end='')  # for float
@@ -151,18 +149,17 @@ class Describer(CSVParser):
                     print(f"{content_vars[var].get(feature):>32}", end='')
             print()  # print newline
 
-    def describe(self):
+    def describe(self, headers):
         # make a list or parameter to chose feature to print.
         print(f"{self.__class__.__name__}:")
-        copy_header = deepcopy(self.header)
-        while copy_header:  # to get only 5 header per 5 to print
+        while headers:  # to get only 5 header per 5 to print
             tmp_header = [
-                copy_header.pop(0)
+                headers.pop(0)
                 for _ in range(4)
-                if len(copy_header)
+                if len(headers)
                           ]
             for to_print in range(2):
                 self._print_header(tmp_header, bool(to_print))
             self._print_desc(tmp_header, self.desc_vars, self.content_vars)
-            if copy_header:
+            if headers:
                 print('\n\n')

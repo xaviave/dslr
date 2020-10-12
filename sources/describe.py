@@ -1,11 +1,11 @@
 from Parser.ArgParser import ArgParser
-from Describer.Describer import Describer
+from Parser.CSVParser import CSVParser
 
 
 def main():
     args = ArgParser()
-    describer = Describer(args)
-    describer.describe()
+    reader = CSVParser(args)
+    reader.csv_parser()
 
 
 if "__main__" == __name__:
