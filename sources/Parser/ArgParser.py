@@ -34,21 +34,14 @@ class ArgParser:
             type=str,
             default=self.default,
         )
-        parser.add_argument(
-            "-p", "--progress", action="store_true", help="Render the progression"
-        )
+        parser.add_argument("-p", "--progress", action="store_true", help="Render the progression")
 
     @staticmethod
     def _add_subparser_args(parser):
         subparser = parser.add_subparsers()
-        subparser_all = subparser.add_parser(
-            "full_visualiser", help="A full visaliser PDF file"
-        )
+        subparser_all = subparser.add_parser("full_visualiser", help="A full visaliser PDF file")
         subparser_all.add_argument(
-            "-v",
-            "--visualiser",
-            action="store_true",
-            help="Render a tab to vizualize data",
+            "-v", "--visualiser", action="store_true", help="Render a tab to vizualize data"
         )
         subparser_spe = subparser.add_parser(
             "spe_visualiser", help="Specific action for graph visaliser in PDF file"
@@ -88,13 +81,8 @@ class ArgParser:
 
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
-        if (
-            not os.path.exists(self.file_name)
-            or os.path.splitext(self.file_name)[1] != ".csv"
-        ):
-            logging.error(
-                "The file doesn't exist or is in the wrong format\nProvide a CSV file"
-            )
+        if not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":
+            logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file")
             sys.exit(-1)
 
     def __init__(self):

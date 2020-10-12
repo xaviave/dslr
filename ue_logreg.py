@@ -36,9 +36,7 @@ class LogisticRegression:
         for cost, c in costh:
             fig = plt.figure()
             plt.plot(range(len(cost)), cost, "r")
-            plt.title(
-                "Convergence Graph of Cost Function of type-" + str(c) + " vs All"
-            )
+            plt.title("Convergence Graph of Cost Function of type-" + str(c) + " vs All")
             plt.xlabel("Number of Iterations")
             plt.ylabel("Cost")
             figures.append(fig)
@@ -66,9 +64,7 @@ class LogisticRegression:
                 # z = np.nan_to_num(X.dot(theta))
                 z = X.dot(theta)
                 print(f"z = {z}\ntheta = {theta}\n X.shape[1] = {X.shape[1]}\n")
-                print(
-                    f"z = {type(z)}\ntheta = {type(theta)}\n X.shape[1] = {type(X.shape[1])}\n"
-                )
+                print(f"z = {type(z)}\ntheta = {type(theta)}\n X.shape[1] = {type(X.shape[1])}\n")
                 h = self._sigmoid_function(z)
                 theta = self._gradient_descent(X, h, theta, y_onevsall, m)
                 print(z, h, theta)
@@ -81,8 +77,7 @@ class LogisticRegression:
         # this function calls the max predict function to classify the individul feature
         X = np.insert(X, 0, 1, axis=1)
         X_predicted = [
-            max((self._sigmoid_function(i.dot(theta)), c) for theta, c in self.theta)[1]
-            for i in X
+            max((self._sigmoid_function(i.dot(theta)), c) for theta, c in self.theta)[1] for i in X
         ]
         return X_predicted
 
@@ -118,9 +113,7 @@ data_T.columns = [
     "Flying",
 ]
 
-y_data = data_T[
-    "Hogwarts House"
-].values  # segregating the label vlue from the feature value.
+y_data = data_T["Hogwarts House"].values  # segregating the label vlue from the feature value.
 X = pd.DataFrame(
     data=data_T,
     columns=[

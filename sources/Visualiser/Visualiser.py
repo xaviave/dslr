@@ -104,8 +104,7 @@ class Visualiser:
     def _scatter_visualizer(self, head):
         fig = plt.figure()
         plt.scatter(
-            x=tuple(self.raw_data.loc[:, head]),
-            y=tuple(self.raw_data.loc[:, "Hogwarts House"]),
+            x=tuple(self.raw_data.loc[:, head]), y=tuple(self.raw_data.loc[:, "Hogwarts House"])
         )
         return fig
 
@@ -124,15 +123,10 @@ class Visualiser:
 
     def _advanced_visualizer(self, header):
         logging.info("Creating tabs in pdf...")
-        func = {
-            "Best Hand": self._histogram_visualizer,
-            "Birthday": self._date_visualizer,
-        }
+        func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
         figures = [self._text_page()]
         for head in header:
-            figures.append(
-                self._update_tab(head, func.get(head, self._scatter_visualizer))
-            )
+            figures.append(self._update_tab(head, func.get(head, self._scatter_visualizer)))
         self._save_as_pdf(figures)
 
     def __init__(self, raw_data):
