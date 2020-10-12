@@ -8,11 +8,12 @@ import pandas as pd
 
 from Parser.ArgParser import ArgParser
 from Visualiser.Visualiser import Visualiser
+from Describer.Describer import Describer
 
 logging.getLogger().setLevel(logging.INFO)
 
 
-class CSVParser(Visualiser):
+class CSVParser(Visualiser, Describer):
     """
     Need to analyse the dataset to highlight the useful data and create the ANALYZED_HEADER parameter
     All the logistic Reference is based on this parameter
@@ -69,7 +70,7 @@ class CSVParser(Visualiser):
             )
 
     def __init__(self, args: ArgParser):
-        super().__init__(pd.DataFrame)
+        Visualiser.__init__(self, pd.DataFrame)
         self.args = args
 
     def csv_parser(self):
@@ -77,3 +78,6 @@ class CSVParser(Visualiser):
         self._as_df()
         if vars(self.args.args).get("visualiser"):
             self.visualizer(self.ANALYZED_HEADER)
+        if vars(self.args.args).get("describer"):
+            Describer.__init__(self, self.raw_data, self.header)
+            self.describe(self.header)
