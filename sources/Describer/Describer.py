@@ -1,8 +1,7 @@
-import itertools
 import re
+import logging
 
 import pandas as pd
-import logging
 
 from math import sqrt, floor, ceil
 
@@ -14,19 +13,13 @@ class Describer:
     Take a dataset in parameter and can display some information about it.
     """
 
-    content_vars: dict = {}
-
     @staticmethod
-    def _get_percentile(percentile):
-        p = re.match(r"^(?P<perc>\d{2})%$", percentile).group("perc")
-        return float(int(p) / 100)
-
-    @classmethod
-    def _percentile(cls, array, **kwargs):
+    def _percentile(**kwargs):
         # can reduce sorting time by getting already sorted array
-        array = array.sort_values(kind="mergesort").values
+        array = kwargs.get("array").sort_values(kind="mergesort").values
         try:
-            k = (len(array) - 1) * cls._get_percentile(kwargs.get("value"))
+            percent = re.match(r"^(?P<perc>\d{2})%$", kwargs.get("value")).group("perc")
+            k = (len(array) - 1) * float(int(percent) / 100)
             f = floor(k)
             c = ceil(k)
             if f == c:
@@ -36,63 +29,66 @@ class Describer:
             return "NaN"
 
     @staticmethod
-    def _unique(array, **kwargs):
+    def _unique(**kwargs):
         unique = {}
-        for value in array:
+        for value in kwargs.get("array"):
             if value not in unique:
                 unique[value] = True
         return len(unique)
 
     @staticmethod
-    def _max(array, **kwargs):
-        maximum = array[0]
-        for value in array:
+    def _max(**kwargs):
+        maximum = kwargs.get("array")[0]
+        for value in kwargs.get("array"):
             if value > maximum:
                 maximum = value
         return maximum
 
     @staticmethod
-    def _min(array, **kwargs):
-        minimum = array[0]
-        for value in array:
+    def _min(**kwargs):
+        minimum = kwargs.get("array")[0]
+        for value in kwargs.get("array"):
             if value < minimum:
                 minimum = value
         return minimum
 
     @staticmethod
-    def _variance(data, **kwargs):
-        n = len(data)
+    def _variance(**kwargs):
+        n = len(kwargs.get("array"))
         try:
-            mean = sum(data) / n
+            mean = sum(kwargs.get("array")) / n
         except (TypeError, ZeroDivisionError):
             return "NaN"
-        return sum((x - mean) ** 2 for x in data) / n
-
-    @classmethod
-    def _std_dev(cls, array, **kwargs):
-        try:
-            return sqrt(cls._variance(array))
-        except TypeError:
-            return "NaN"
+        return sum((x - mean) ** 2 for x in kwargs.get("array")) / n
 
     @staticmethod
-    def _mean(array, **kwargs):
+    def _std_dev(**kwargs):
+        array_size = len(kwargs.get("array"))
         try:
-            return sum(array) / len(array)
+            mean = sum(kwargs.get("array")) / array_size
+            variance = sum((x - mean) ** 2 for x in kwargs.get("array")) / array_size
+            return sqrt(variance)
         except (TypeError, ZeroDivisionError):
             return "NaN"
 
     @staticmethod
-    def _len(array, **kwargs):
-        return len(array)
+    def _mean(**kwargs):
+        try:
+            return sum(kwargs.get("array")) / len(kwargs.get("array"))
+        except (TypeError, ZeroDivisionError):
+            return "NaN"
+
+    @staticmethod
+    def _len(**kwargs):
+        return len(kwargs.get("array"))
 
     @staticmethod
     def _print_header(headers):
         text = []
         underline = []
         for feature in headers:
-            text.append(f"{feature:>32}")
-            underline.append(f"{'_' * len(feature):>32}")
+            text.append(f"{feature:>33}")
+            underline.append(f"{'_' * len(feature):>33}")
         print(f"{' ':>9}{''.join(text)}\n{' ':>9}{''.join(underline)}")
 
     @classmethod
@@ -112,9 +108,9 @@ class Describer:
             values = [f"{k:>8}:"]
             for feature in headers:
                 try:
-                    values.append(f"{v(data[feature], value=k):>32.6f}")  # fuck float
+                    values.append(f"{v(array=data.get(feature), value=k):>33.6f}")
                 except ValueError:
-                    values.append(f"{v(data[feature], value=k):>32}")
+                    values.append(f"{v(array=data.get(feature), value=k):>33}")
             print("".join(values))
 
     @classmethod
