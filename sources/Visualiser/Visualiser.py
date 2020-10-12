@@ -142,8 +142,7 @@ class Visualiser:
         if self.raw_data.empty:
             logging.error("Please init raw_data")
             sys.exit(-1)
-        logging.info(
-            self.raw_data.describe()
-        )  # here use next _describe from @lotoussa function
+        logging.info(self.raw_data.describe())
+        # here use next _describe from @lotoussa function
         matplotlib.use("pdf")
         self._advanced_visualizer(header)
