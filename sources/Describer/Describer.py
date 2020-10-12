@@ -84,15 +84,26 @@ class Describer:
 
     @staticmethod
     def _print_header(headers):
-        text = []
-        underline = []
+        text = underline = f"{' ':>9}"
         for feature in headers:
-            text.append(f"{feature:>33}")
-            underline.append(f"{'_' * len(feature):>33}")
-        print(f"{' ':>9}{''.join(text)}\n{' ':>9}{''.join(underline)}")
+            text += f"{feature:>33}"
+            underline += f"{'_' * len(feature):>33}"
+        print(f"{text}\n"
+              f"{underline}")
+
+    @staticmethod
+    def _print_desc(desc_vars, data, headers):
+        for k, v in desc_vars.items():
+            text = f"{k:>8}:"
+            for feature in headers:
+                try:
+                    text += f"{v(array=data.get(feature), value=k):>33.6f}"
+                except ValueError:
+                    text += f"{v(array=data.get(feature), value=k):>33}"
+            print(text)
 
     @classmethod
-    def _print_desc(cls, data, headers):
+    def describe(cls, data: pd.DataFrame, headers):
         desc_vars = {
             "count": cls._len,
             "mean": cls._mean,
@@ -104,20 +115,9 @@ class Describer:
             "max": cls._max,
             "unique": cls._unique,
         }
-        for k, v in desc_vars.items():
-            values = [f"{k:>8}:"]
-            for feature in headers:
-                try:
-                    values.append(f"{v(array=data.get(feature), value=k):>33.6f}")
-                except ValueError:
-                    values.append(f"{v(array=data.get(feature), value=k):>33}")
-            print("".join(values))
-
-    @classmethod
-    def describe(cls, data: pd.DataFrame, headers):
         while headers:
             tmp_header = [headers.pop(0) for _ in range(4) if len(headers)]
             cls._print_header(tmp_header)
-            cls._print_desc(data, tmp_header)
+            cls._print_desc(desc_vars, data, tmp_header)
             if headers:
                 print("\n\n")
