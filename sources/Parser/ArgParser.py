@@ -41,10 +41,7 @@ class ArgParser:
         subparser = parser.add_subparsers()
         subparser_all = subparser.add_parser("full_visualiser", help="A full visaliser PDF file")
         subparser_all.add_argument(
-            "-v",
-            "--visualiser",
-            action="store_true",
-            help="Render a tab to vizualize data",
+            "-v", "--visualiser", action="store_true", help="Render a tab to vizualize data"
         )
         subparser_spe = subparser.add_parser(
             "spe_visualiser", help="Specific action for graph visaliser in PDF file"
@@ -90,4 +87,3 @@ class ArgParser:
     def __init__(self):
         self._init_argparse()
         self._get_options()
-        print(vars(self.args))
