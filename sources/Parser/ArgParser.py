@@ -100,4 +100,3 @@ class ArgParser:
     def __init__(self):
         self._init_argparse()
         self._get_options()
-        print(vars(self.args))

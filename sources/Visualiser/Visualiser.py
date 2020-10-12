@@ -104,8 +104,8 @@ class Visualiser:
     def _scatter_visualizer(self, head):
         fig = plt.figure()
         plt.scatter(
-            x=tuple(self.raw_data.loc[:, "Hogwarts House"]),
-            y=tuple(self.raw_data.loc[:, head]),
+            x=tuple(self.raw_data.loc[:, head]),
+            y=tuple(self.raw_data.loc[:, "Hogwarts House"]),
         )
         return fig
 
@@ -140,8 +140,10 @@ class Visualiser:
 
     def visualizer(self, header):
         if self.raw_data.empty:
-            logging.error("raw_data not init")
+            logging.error("Please init raw_data")
             sys.exit(-1)
-        logging.info(self.raw_data.head())
+        logging.info(
+            self.raw_data.describe()
+        )  # here use next _describe from @lotoussa function
         matplotlib.use("pdf")
         self._advanced_visualizer(header)

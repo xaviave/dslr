@@ -21,11 +21,10 @@ class CSVParser(Visualiser):
     header: list
     args: ArgParser
     df: pd.DataFrame
+    df_train: pd.DataFrame
 
     # better if we take this from a file
     ANALYZED_HEADER: np.ndarray = [
-        "Best Hand",
-        "Arithmancy",
         "Astronomy",
         "Herbology",
         "Defense Against the Dark Arts",
@@ -35,12 +34,12 @@ class CSVParser(Visualiser):
         "History of Magic",
         "Transfiguration",
         "Potions",
-        "Care of Magical Creatures",
         "Charms",
         "Flying",
     ]
 
     def _check_header(self):
+        self.header = list(self.raw_data.columns.values)
         if not all(h in self.header for h in self.ANALYZED_HEADER):
             logging.error(
                 "CSV file header doesn't contain enough data to analyse the dataset"
@@ -56,15 +55,17 @@ class CSVParser(Visualiser):
         except Exception:
             logging.error(f"Error while processing {self.args.file_name}")
             sys.exit(-1)
-        self.header = list(self.raw_data.columns.values)
         self._check_header()
 
     def _as_df(self):
         self.df = pd.DataFrame(data=self.raw_data, columns=self.ANALYZED_HEADER)
-        if "Birthday" in self.df.columns:
-            self.df["Birthday"] = self.df["Birthday"].apply(
-                lambda x: datetime.datetime.strptime(x, "%Y-%m-%d")
-            )
+        # if "Best Hand" in self.df.columns:
+        #     self.df["Best Hand"] = self.df["Best Hand"].apply(
+        #         lambda x: 0 if x == "Left" else 1
+        #     )
+        self.df_train = pd.DataFrame(
+            data=self.raw_data, columns=["Hogwarts House", "Index"]
+        )
 
     def __init__(self, args: ArgParser):
         super().__init__(pd.DataFrame)
