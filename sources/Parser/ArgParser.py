@@ -78,7 +78,6 @@ class ArgParser:
 
     def _get_options(self):
         self.file_name = self.args.csv_file
-
         if self.file_name == self.default:
             logging.info("Using default dataset CSV file")
         if not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":

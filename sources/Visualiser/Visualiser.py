@@ -16,10 +16,15 @@ logging.getLogger().setLevel(logging.INFO)
 class Visualiser:
     raw_data: pd.DataFrame
 
-    def _save_as_pdf(self, figures):
-        with PdfPages(f"data_visalizer{len(figures)}.pdf") as pdf:
-            for f in figures:
-                pdf.savefig(f, bbox_inches="tight")
+    @staticmethod
+    def _save_as_pdf(figures):
+        try:
+            with PdfPages(f"data_visualizer{len(figures)}.pdf") as pdf:
+                for f in figures:
+                    pdf.savefig(f, bbox_inches="tight")
+        except:
+            logging.error(f"Error while creating data_visualizer{len(figures)}.pdf")
+            sys.exit(-1)
 
     @staticmethod
     def _text_page():
@@ -49,7 +54,7 @@ class Visualiser:
         return fig
 
     @staticmethod
-    def _autolabel(ax, rects):
+    def _auto_label(ax, rects):
         """Attach a text label above each bar in *rects*, displaying its height."""
         for rect in rects:
             height = rect.get_height()
@@ -65,24 +70,12 @@ class Visualiser:
     @staticmethod
     def _process_bar_data(raw_data, head):
         stat = [
-            raw_data.loc[lambda df: df["Hogwarts House"] == "Slytherin", head],
-            raw_data.loc[lambda df: df["Hogwarts House"] == "Ravenclaw", head],
-            raw_data.loc[lambda df: df["Hogwarts House"] == "Gryffindor", head],
-            raw_data.loc[lambda df: df["Hogwarts House"] == "Hufflepuff", head],
+            raw_data.loc[lambda df: df["Hogwarts House"] == house, head]
+            for house in ["Slytherin", "Ravenclaw", "Gryffindor", "Hufflepuff"]
         ]
         return {
-            "right": [
-                (stat[0] == "Right").sum(),
-                (stat[1] == "Right").sum(),
-                (stat[2] == "Right").sum(),
-                (stat[3] == "Right").sum(),
-            ],
-            "left": [
-                (stat[0] == "Left").sum(),
-                (stat[1] == "Left").sum(),
-                (stat[2] == "Left").sum(),
-                (stat[3] == "Left").sum(),
-            ],
+            "right": [(stat[index] == "Right").sum() for index in range(4)],
+            "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
     def _histogram_visualizer(self, head):
@@ -96,8 +89,8 @@ class Visualiser:
         ax.set_xticks(x)
         ax.set_xticklabels(houses)
         ax.legend()
-        self._autolabel(ax, rects1)
-        self._autolabel(ax, rects2)
+        self._auto_label(ax, rects1)
+        self._auto_label(ax, rects2)
         fig.tight_layout()
         return fig
 
