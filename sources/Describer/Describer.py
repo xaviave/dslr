@@ -88,8 +88,7 @@ class Describer:
         for feature in headers:
             text += f"{feature:>33}"
             underline += f"{'_' * len(feature):>33}"
-        print(f"{text}\n"
-              f"{underline}")
+        print(f"{text}\n" f"{underline}")
 
     @staticmethod
     def _print_desc(desc_vars, data, headers):

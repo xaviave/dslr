@@ -123,9 +123,7 @@ class Visualiser:
         }
         figures = [self._text_page()]
         for head in header:
-            figures.append(
-                self._update_tab(head, func.get(head, self._scatter_visualizer))
-            )
+            figures.append(self._update_tab(head, func.get(head, self._scatter_visualizer)))
         self._save_as_pdf(figures)
 
     def __init__(self, raw_data):

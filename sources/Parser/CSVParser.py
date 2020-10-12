@@ -45,9 +45,7 @@ class CSVParser(Visualiser, Describer):
 
     def _check_header(self):
         if not all(h in self.header for h in self.ANALYZED_HEADER):
-            logging.error(
-                "CSV file header doesn't contain enough data to analyse the dataset"
-            )
+            logging.error("CSV file header doesn't contain enough data to analyse the dataset")
             sys.exit(-1)
 
     def _get_csv_file(self):
@@ -85,6 +83,4 @@ class CSVParser(Visualiser, Describer):
 
     def describe(self, **kwargs):
         # add checker for Describer init
-        Describer.describe(
-            data=self.raw_data, headers=kwargs.get("headers", self.header)
-        )
+        Describer.describe(data=self.raw_data, headers=kwargs.get("headers", self.header))
