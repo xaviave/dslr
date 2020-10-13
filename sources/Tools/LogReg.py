@@ -76,6 +76,7 @@ class LogReg(DatasetHandler):
                 h = self._sigmoid(dataset.dot(theta))
                 theta = self._gradient_descent(dataset, h, theta, actual_y, len(y))
                 cost.append(self._cost_function(h, actual_y))
+                # look how to optimise number of iteration with actual and previous cost
             self.theta.append((theta, i))
             self.cost.append((cost, i))
         logging.info(f"timer={datetime.datetime.now() - start}: Training finish")

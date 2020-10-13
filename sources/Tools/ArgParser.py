@@ -3,7 +3,6 @@ import sys
 import logging
 import argparse
 
-
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -36,32 +35,39 @@ class ArgParser:
         )
 
     @staticmethod
-    def _add_subparser_args(parser):
-        subparser = parser.add_subparsers()
-        subparser_all = subparser.add_parser("fv", help="A full visaliser PDF file")
-        subparser_all.add_argument(
-            "-v", "--visualiser", action="store_true", help="Render a tab to vizualize data"
+    def _add_exclusive_args(parser):
+        group = parser.add_mutually_exclusive_group(required=False)
+        group.add_argument(
+            "-v",
+            "--visualiser",
+            action="store_const",
+            const="v",
+            help="Render a tab to vizualize data",
+            dest="type_visualizer",
         )
-        subparser_spe = subparser.add_parser(
-            "sv", help="Specific action for graph visaliser in PDF file"
-        )
-        subparser_spe.add_argument(
+        group.add_argument(
             "-hh",
             "--histogram",
-            action="store_true",
+            action="store_const",
+            const="hh",
             help="Render an histogram for a specific data",
+            dest="type_visualizer",
         )
-        subparser_spe.add_argument(
+        group.add_argument(
             "-sc",
             "--scatter_plot",
-            action="store_true",
+            action="store_const",
+            const="sc",
             help="Render a scatter plot graph for a specific data",
+            dest="type_visualizer",
         )
-        subparser_spe.add_argument(
+        group.add_argument(
             "-pp",
             "--pair_plot",
-            action="store_true",
+            action="store_const",
+            const="pp",
             help="Render a pair plot graph for a specific data",
+            dest="type_visualizer",
         )
 
     def _init_argparse(self):
@@ -72,7 +78,7 @@ class ArgParser:
             prog="PROG", add_help=False, description="Process CSV dataset"
         )
         self._add_parser_args(self.parser)
-        self._add_subparser_args(self.parser)
+        self._add_exclusive_args(self.parser)
         self.args = self.parser.parse_args()
 
     def _get_options(self):
