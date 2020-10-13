@@ -102,7 +102,7 @@ class Describer:
             print(text)
 
     @classmethod
-    def describe(cls, data: pd.DataFrame, headers):
+    def describe(cls, data: pd.DataFrame, headers, slice_print: int):
         desc_vars = {
             "count": cls._len,
             "mean": cls._mean,
@@ -115,7 +115,7 @@ class Describer:
             "unique": cls._unique,
         }
         while headers:
-            tmp_header = [headers.pop(0) for _ in range(4) if len(headers)]
+            tmp_header = [headers.pop(0) for _ in range(slice_print) if len(headers)]
             cls._print_header(tmp_header)
             cls._print_desc(desc_vars, data, tmp_header)
             if headers:

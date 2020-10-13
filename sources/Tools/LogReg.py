@@ -1,20 +1,34 @@
 import os
 import logging
 import datetime
+import sys
 import warnings
 
 import numpy as np
+
+from Tools.DatasetHandler import DatasetHandler
 
 # delete the numpy deprecation warning
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 logging.getLogger().setLevel(logging.INFO)
 
 
-class LogReg:
+class LogReg(DatasetHandler):
     cost: list
     theta: list
     n_iter: int
     alpha: float
+    theta_file_name: str
+
+    def _add_parser_args(self, parser):
+        super()._add_parser_args(parser)
+        parser.add_argument(
+            "-c",
+            "--classifier",
+            help=f"Provide a classifier name from the dataset column",
+            type=str,
+            default="Hogwarts House",
+        )
 
     @staticmethod
     def _sigmoid(x):
@@ -28,18 +42,25 @@ class LogReg:
     def _gradient_descent(self, dataset, h, theta, y, m):
         return theta - self.alpha * (np.dot(dataset.T, (h - y)) / m)
 
-    def __init__(self, alpha=0.01, n_iteration=3000, file_name="generated_theta.npy"):
-        self.alpha = alpha  # value in the object
+    def __init__(
+        self,
+        train: bool = False,
+        alpha: float = 0.01,
+        n_iteration: int = 3000,
+        theta_file_name: str = "generated_theta.npy",
+    ):
+        super().__init__(parse=True, train=train)
+        self.alpha = alpha
         self.n_iter = n_iteration
-        self.file_name = file_name
+        self.theta_file_name = os.path.abspath(theta_file_name)
 
     def load_theta(self):
-        logging.info(f"{datetime.datetime.now()}: Loading '{self.file_name}'")
-        self.theta = np.load(os.path.abspath(self.file_name), allow_pickle=True)
+        logging.info(f"{datetime.datetime.now()}: Loading '{self.theta_file_name}'")
+        self.theta = self._load_npy(self.theta_file_name)
 
     def save_theta(self):
-        logging.info(f"{datetime.datetime.now()}: Saving data into '{self.file_name}'")
-        np.save(self.file_name, self.theta, allow_pickle=True)
+        logging.info(f"{datetime.datetime.now()}: Saving data into '{self.theta_file_name}'")
+        self._save_npy(self.theta_file_name, self.theta)
 
     def train(self, dataset, y):
         self.cost = []

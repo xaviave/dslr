@@ -8,9 +8,9 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 class ArgParser:
-    file_name: str
+    argparse_file_name: str
     args: argparse.Namespace
-    default: str = os.path.join("data", "datasets", "dataset_train.csv")
+    default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
 
     class _HelpAction(argparse._HelpAction):
         def __call__(self, parser, namespace, values, option_string=None):
@@ -30,21 +30,20 @@ class ArgParser:
         parser.add_argument(
             "-f",
             "--csv_file",
-            help=f"Provide CSV dataset file - Using '{self.default}' as default file",
+            help=f"Provide CSV dataset file - Using '{self.default_dataset}' as default file",
             type=str,
-            default=self.default,
+            default=self.default_dataset,
         )
-        parser.add_argument("-p", "--progress", action="store_true", help="Render the progression")
 
     @staticmethod
     def _add_subparser_args(parser):
         subparser = parser.add_subparsers()
-        subparser_all = subparser.add_parser("full_visualiser", help="A full visaliser PDF file")
+        subparser_all = subparser.add_parser("fv", help="A full visaliser PDF file")
         subparser_all.add_argument(
             "-v", "--visualiser", action="store_true", help="Render a tab to vizualize data"
         )
         subparser_spe = subparser.add_parser(
-            "spe_visualiser", help="Specific action for graph visaliser in PDF file"
+            "sv", help="Specific action for graph visaliser in PDF file"
         )
         subparser_spe.add_argument(
             "-hh",
@@ -69,21 +68,27 @@ class ArgParser:
         """
         custom arguments to add option
         """
-        parser = argparse.ArgumentParser(
+        self.parser = argparse.ArgumentParser(
             prog="PROG", add_help=False, description="Process CSV dataset"
         )
-        self._add_parser_args(parser)
-        self._add_subparser_args(parser)
-        self.args = parser.parse_args()
+        self._add_parser_args(self.parser)
+        self._add_subparser_args(self.parser)
+        self.args = self.parser.parse_args()
 
     def _get_options(self):
-        self.file_name = self.args.csv_file
-        if self.file_name == self.default:
+        self.argparse_file_name = self.args.csv_file
+        if self.argparse_file_name == self.default_dataset:
             logging.info("Using default dataset CSV file")
-        if not os.path.exists(self.file_name) or os.path.splitext(self.file_name)[1] != ".csv":
+        if (
+            not os.path.exists(self.argparse_file_name)
+            or os.path.splitext(self.argparse_file_name)[1] != ".csv"
+        ):
             logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file")
             sys.exit(-1)
 
     def __init__(self):
         self._init_argparse()
         self._get_options()
+
+    def get_args(self, value: str, default=None):
+        return vars(self.args).get(value, default)

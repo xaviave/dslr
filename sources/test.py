@@ -3,16 +3,16 @@ import random
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from LogReg.LogReg import LogReg
-from Parser.ArgParser import ArgParser
-from Parser.CSVParser import CSVParser
+from Tools.LogReg import LogReg
+from Tools.ArgParser import ArgParser
+from Tools.DatasetHandler import DatasetHandler
 
 scores = []
 
 
 def test():
     args = ArgParser()
-    dataset = CSVParser(args, parse=True, train=True)
+    dataset = DatasetHandler(args, parse=True, train=True)
     for _ in range(10):
         size = random.randint(20, 90) / 100
         x_train, x_test, y_train, y_test = train_test_split(

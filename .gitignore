@@ -133,3 +133,6 @@ dmypy.json
 
 # Generated PDF
 .pdf
+
+# numpy files data
+.npy

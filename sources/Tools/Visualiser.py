@@ -122,14 +122,9 @@ class Visualiser:
             figures.append(self._update_tab(head, func.get(head, self._scatter_visualizer)))
         self._save_as_pdf(figures)
 
-    def __init__(self, raw_data):
-        self.raw_data = raw_data
-
     def visualizer(self, header):
+        matplotlib.use("pdf")
         if self.raw_data.empty:
             logging.error("Please init raw_data")
             sys.exit(-1)
-        logging.info(self.raw_data.describe())
-        # here use next _describe from @lotoussa function
-        matplotlib.use("pdf")
         self._advanced_visualizer(header)
