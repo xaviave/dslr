@@ -31,7 +31,6 @@ class LogReg(DatasetHandler):
             "--classifier",
             help=f"Provide a classifier name from the dataset column",
             type=str,
-            default="Hogwarts House",
         )
 
     def _add_exclusive_args(self, parser):
@@ -53,6 +52,12 @@ class LogReg(DatasetHandler):
             help="Use stachostic gradient desscent as optimisation algorithm",
             dest="type_gradient",
         )
+
+    def _get_options(self):
+        super()._get_options()
+        if self.get_args("classifier") is None:
+            logging.error("classifier option not provided")
+            sys.exit(-1)
 
     """
         Private methods
