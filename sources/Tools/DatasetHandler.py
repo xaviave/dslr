@@ -53,11 +53,19 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
 
     @staticmethod
     def _load_npy(file_name: str):
-        return np.load(file_name, allow_pickle=True)
+        try:
+            return np.load(file_name, allow_pickle=True)
+        except Exception as e:
+            logging.error(e)
+            sys.exit(-1)
 
     @staticmethod
     def _save_npy(file_name: str, data):
-        np.save(file_name, data, allow_pickle=True)
+        try:
+            np.save(file_name, data, allow_pickle=True)
+        except Exception as e:
+            logging.error(e)
+            sys.exit(-1)
 
     def _check_header(self):
         """
@@ -109,8 +117,12 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         tmp_dataset = pd.DataFrame(data=dataset)
         tmp_dataset.index.name = "Index"
         tmp_dataset.columns = columns
-        with open(os.path.abspath("houses.csv"), "w") as file:
-            file.write(tmp_dataset.to_csv())
+        try:
+            with open(os.path.abspath("houses.csv"), "w") as file:
+                file.write(tmp_dataset.to_csv())
+        except Exception as e:
+            logging.error(e)
+            sys.exit(-1)
 
     def save_header(self, header_file: str = default_header_file):
         self._save_npy(header_file, self.analysed_header)
@@ -129,9 +141,6 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         self._as_df(train, classifier=classifier)
 
     def visualize(self):
-        """
-        adapt this with the parser option
-        """
         if self.get_args("type_visualizer"):
             self.describe(headers=list(self.analysed_header), slice_print=6)
             self.visualizer(self.analysed_header)

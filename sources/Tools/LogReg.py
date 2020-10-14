@@ -118,7 +118,7 @@ class LogReg(DatasetHandler):
         self.theta = []
         start = datetime.datetime.now()
         logging.info("Fitting the given dataset.")
-        dataset = np.insert(np.nan_to_num(dataset), 0, 1, axis=1)
+        dataset = np.insert(np.nan_to_num(dataset, copy=False), 0, 1, axis=1)
         for i in np.unique(y):
             actual_y = np.where(y == i, 1, 0)
             theta, cost = self.gradient_func(dataset, np.zeros(dataset.shape[1]), actual_y, y)
@@ -127,7 +127,7 @@ class LogReg(DatasetHandler):
         logging.info(f"timer={datetime.datetime.now() - start}: Training finish")
 
     def predict(self, dataset):
-        dataset = np.insert(np.nan_to_num(dataset), 0, 1, axis=1)
+        dataset = np.insert(np.nan_to_num(dataset, copy=False), 0, 1, axis=1)
         return [
             max((self._sigmoid(i.dot(theta)), c) for theta, c in self.theta)[1] for i in dataset
         ]
