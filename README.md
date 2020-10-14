@@ -16,6 +16,6 @@ The main part:
    - the logistic regression trainer file `logreg_train.py`, that will generate a file with the predicition from the gradient descent
    - the predict program `logreg_predict.py` that take the file generate previously and predict every house form the dataset given
 
-## Ressources
+## Resources
 
-All ressources are found in data or subject
+All Resources are found in data or subject
