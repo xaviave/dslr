@@ -135,6 +135,7 @@ class Visualiser(ArgParser):
         x = np.arange(len(houses))
         width = 0.35
         fig, ax = plt.subplots()
+        # print(hands)
         rects1 = ax.bar(x - width / 2, hands["right"], width, label="Right")
         rects2 = ax.bar(x + width / 2, hands["left"], width, label="Left")
         ax.set_xticks(x)

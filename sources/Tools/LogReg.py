@@ -100,11 +100,7 @@ class LogReg(DatasetHandler):
         self.alpha = alpha
         self.n_iter = n_iteration
         self.theta_file_name = os.path.abspath(theta_file_name)
-        self.gradient_func = (
-            self.get_args("type_gradient")
-            if self.get_args("type_gradient") is not None
-            else self._batch_gradient_descent
-        )
+        self.gradient_func = self.get_args("type_gradient", default=self._batch_gradient_descent)
 
     """
         Public methods
