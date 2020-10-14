@@ -20,6 +20,10 @@ class LogReg(DatasetHandler):
     alpha: float
     theta_file_name: str
 
+    """
+        Override methods
+    """
+
     def _add_parser_args(self, parser):
         super()._add_parser_args(parser)
         parser.add_argument(
@@ -29,6 +33,30 @@ class LogReg(DatasetHandler):
             type=str,
             default="Hogwarts House",
         )
+
+    def _add_exclusive_args(self, parser):
+        super()._add_exclusive_args(parser)
+        gradient_group = parser.add_mutually_exclusive_group(required=False)
+        gradient_group.add_argument(
+            "-bgd",
+            "--batch_gradient_descent",
+            action="store_const",
+            const=self._batch_gradient_descent,
+            help="Use batch gradient desscent as optimisation algorithm (default value)",
+            dest="type_gradient",
+        )
+        gradient_group.add_argument(
+            "-sgd",
+            "--stachostic_gradient_descent",
+            action="store_const",
+            const=self._stochastic_gradient_descent,
+            help="Use stachostic gradient desscent as optimisation algorithm",
+            dest="type_gradient",
+        )
+
+    """
+        Private methods
+    """
 
     @staticmethod
     def _sigmoid(x):
@@ -42,6 +70,20 @@ class LogReg(DatasetHandler):
     def _gradient_descent(self, dataset, h, theta, y, m):
         return theta - self.alpha * (np.dot(dataset.T, (h - y)) / m)
 
+    def _batch_gradient_descent(self, dataset, theta, actual_y, y):
+        cost = []
+        for _ in range(self.n_iter):
+            h = self._sigmoid(dataset.dot(theta))
+            theta = self._gradient_descent(dataset, h, theta, actual_y, len(y))
+            cost.append(self._cost_function(h, actual_y))
+            # look how to optimise number of iteration with actual and previous cost
+        return theta, cost
+
+    def _stochastic_gradient_descent(self):
+        logging.error("Not implemented, use batch_gradient_descent")
+        sys.exit(-1)
+        pass
+
     def __init__(
         self,
         train: bool = False,
@@ -53,6 +95,15 @@ class LogReg(DatasetHandler):
         self.alpha = alpha
         self.n_iter = n_iteration
         self.theta_file_name = os.path.abspath(theta_file_name)
+        self.gradient_func = (
+            self.get_args("type_gradient")
+            if self.get_args("type_gradient") is not None
+            else self._batch_gradient_descent
+        )
+
+    """
+        Public methods
+    """
 
     def load_theta(self):
         logging.info(f"{datetime.datetime.now()}: Loading '{self.theta_file_name}'")
@@ -69,14 +120,8 @@ class LogReg(DatasetHandler):
         logging.info("Fitting the given dataset.")
         dataset = np.insert(np.nan_to_num(dataset), 0, 1, axis=1)
         for i in np.unique(y):
-            cost = []
             actual_y = np.where(y == i, 1, 0)
-            theta = np.zeros(dataset.shape[1])
-            for _ in range(self.n_iter):
-                h = self._sigmoid(dataset.dot(theta))
-                theta = self._gradient_descent(dataset, h, theta, actual_y, len(y))
-                cost.append(self._cost_function(h, actual_y))
-                # look how to optimise number of iteration with actual and previous cost
+            theta, cost = self.gradient_func(dataset, np.zeros(dataset.shape[1]), actual_y, y)
             self.theta.append((theta, i))
             self.cost.append((cost, i))
         logging.info(f"timer={datetime.datetime.now() - start}: Training finish")

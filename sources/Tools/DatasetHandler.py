@@ -12,13 +12,44 @@ from Tools.Describer import Describer
 logging.getLogger().setLevel(logging.INFO)
 
 
-class DatasetHandler(ArgParser, Visualiser, Describer):
+class DatasetHandler(Visualiser, ArgParser, Describer):
     header: list
     df: pd.DataFrame
     np_df: np.ndarray
     np_df_train: np.ndarray
     analysed_header: np.array
+    argparse_file_name: str
+    default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
     default_header_file: str = os.path.join("sources", "Ressources", "analysed_header.npy")
+
+    """
+        Override methods
+    """
+
+    def _add_parser_args(self, parser):
+        super()._add_parser_args(parser)
+        parser.add_argument(
+            "-f",
+            "--csv_file",
+            help=f"Provide CSV dataset file - Using '{self.default_dataset}' as default file",
+            type=str,
+            default=self.default_dataset,
+        )
+
+    def _get_options(self):
+        self.argparse_file_name = self.args.csv_file
+        if self.argparse_file_name == self.default_dataset:
+            logging.info("Using default dataset CSV file")
+        if (
+            not os.path.exists(self.argparse_file_name)
+            or os.path.splitext(self.argparse_file_name)[1] != ".csv"
+        ):
+            logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file")
+            sys.exit(-1)
+
+    """
+        Private methods
+    """
 
     @staticmethod
     def _load_npy(file_name: str):
@@ -69,6 +100,10 @@ class DatasetHandler(ArgParser, Visualiser, Describer):
             self.csv_parser(train=train, classifier=self.get_args("classifier"))
         self.visualize()
 
+    """
+        Public methods
+    """
+
     @staticmethod
     def write_to_csv(dataset: list, columns: list):
         tmp_dataset = pd.DataFrame(data=dataset)
@@ -97,6 +132,6 @@ class DatasetHandler(ArgParser, Visualiser, Describer):
         """
         adapt this with the parser option
         """
-        if self.get_args("visualiser"):
+        if self.get_args("type_visualizer"):
             self.describe(headers=list(self.analysed_header), slice_print=6)
             self.visualizer(self.analysed_header)
