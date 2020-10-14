@@ -132,7 +132,7 @@ dmypy.json
 .idea
 
 # Generated PDF
-.pdf
+*.pdf
 
 # numpy files data
-.npy
+*.npy
