@@ -45,11 +45,11 @@ class ArgParser:
         # @ define it in your class
         pass
 
-    def _init_argparse(self):
+    def _init_argparse(self, prog: str = "PROG"):
         """
         custom arguments to add option
         """
-        self.parser = argparse.ArgumentParser(prog="PROG", add_help=False)
+        self.parser = argparse.ArgumentParser(prog=prog, add_help=False)
         self._add_parser_args(self.parser)
         self._add_exclusive_args(self.parser)
         self._add_subparser_args(self.parser)
