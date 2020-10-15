@@ -67,5 +67,5 @@ class ArgParser:
         """
         Allow to access directly and safely to a variable present or not in the class
         """
-        ret = vars(self.args).get(value)
+        ret = vars(self.args).get(value, None)
         return ret if ret is not None else default_value

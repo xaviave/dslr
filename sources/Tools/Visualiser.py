@@ -22,13 +22,6 @@ class Visualiser(ArgParser):
         Override methods
     """
 
-    @staticmethod
-    def _exiting(exception=None, message="Error", mod=-1):
-        if exception:
-            logging.error(f"{exception}\n")
-        logging.error(f"{message}")
-        sys.exit(mod)
-
     def _add_exclusive_args(self, parser):
         visualiser_group = parser.add_mutually_exclusive_group(required=False)
         visualiser_group.add_argument(
@@ -157,7 +150,7 @@ class Visualiser(ArgParser):
         logging.warning(
             f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
-        self._exiting(message="Not implemented")
+        self._exit(message="Not implemented")
 
     def _scatter_plot_visualizer(self, head):
         logging.warning(
@@ -196,6 +189,13 @@ class Visualiser(ArgParser):
             figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
         self._save_as_pdf(figures)
 
+    @staticmethod
+    def _exit(exception=None, message="Error", mod=-1):
+        if exception:
+            logging.error(f"{exception}")
+        logging.error(f"{message}")
+        sys.exit(mod)
+
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
@@ -208,5 +208,5 @@ class Visualiser(ArgParser):
     def visualizer(self, header):
         matplotlib.use("pdf")
         if self.raw_data.empty:
-            self._exiting(message="Please init raw_data")
+            self._exit(message="Please init raw_data")
         self.visualizer_func(header)

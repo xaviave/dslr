@@ -26,13 +26,6 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Override methods
     """
 
-    @staticmethod
-    def _exiting(exception=None, message="Error", mod=-1):
-        if exception:
-            logging.error(f"{exception}\n")
-        logging.error(f"{message}")
-        sys.exit(mod)
-
     def _add_parser_args(self, parser):
         super()._add_parser_args(parser)
         parser.add_argument(
@@ -51,7 +44,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             not os.path.exists(self.argparse_file_name)
             or os.path.splitext(self.argparse_file_name)[1] != ".csv"
         ):
-            self._exiting(
+            self._exit(
                 message="The file doesn't exist or is in the wrong format\nProvide a CSV file"
             )
 
@@ -59,21 +52,17 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Private methods
     """
 
-    @staticmethod
-    def _load_npy(file_name: str):
+    def _load_npy(self, file_name: str):
         try:
             return np.load(file_name, allow_pickle=True)
         except Exception as e:
-            logging.error(e)
-            sys.exit(-1)
+            self._exit(exception=e)
 
-    @staticmethod
-    def _save_npy(file_name: str, data):
+    def _save_npy(self, file_name: str, data):
         try:
             np.save(file_name, data, allow_pickle=True)
         except Exception as e:
-            logging.error(e)
-            sys.exit(-1)
+            self._exit(exception=e)
 
     def _check_header(self):
         """
@@ -84,7 +73,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         self.load_header()
         self.header = list(self.raw_data.columns.values)
         if not all(h in self.header for h in self.analysed_header):
-            self._exiting(
+            self._exit(
                 message="CSV file header doesn't contain enough data to analyse the dataset"
             )
 
@@ -94,7 +83,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             self.raw_data = pd.read_csv(f"{os.path.abspath(self.argparse_file_name)}")
             self.raw_data.fillna(0, inplace=True)
         except Exception:
-            self._exiting(message=f"Error while processing {self.argparse_file_name}")
+            self._exit(message=f"Error while processing {self.argparse_file_name}")
         self._check_header()
 
     @staticmethod
@@ -111,7 +100,10 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         self.df = pd.DataFrame(data=self.raw_data, columns=self.analysed_header)
         self.np_df = self._normalise(self.df)
         if train and classifier is not None:
-            self.np_df_train = self.raw_data[classifier].values
+            try:
+                self.np_df_train = self.raw_data[classifier].values
+            except KeyError as e:
+                self._exit(exception=e, message="Error with getting [classifier] in raw_data")
 
     def __init__(self, parse: bool = False, train: bool = False):
         super().__init__()
@@ -124,8 +116,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Public methods
     """
 
-    @staticmethod
-    def write_to_csv(dataset: list, columns: list):
+    def write_to_csv(self, dataset: list, columns: list):
         tmp_dataset = pd.DataFrame(data=dataset)
         tmp_dataset.index.name = "Index"
         tmp_dataset.columns = columns
@@ -133,8 +124,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             with open(os.path.abspath("houses.csv"), "w") as file:
                 file.write(tmp_dataset.to_csv())
         except Exception as e:
-            logging.error(e)
-            sys.exit(-1)
+            self._exit(exception=e)
 
     def save_header(self, header_file: str = default_header_file):
         self._save_npy(header_file, self.analysed_header)
@@ -154,5 +144,5 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
 
     def visualize(self):
         if self.get_args("type_visualizer") is not None:
-            self.describe(headers=list(self.analysed_header), slice_print=6)
+            self.describe(headers=list(self.analysed_header), slice_print=4)
             self.visualizer(self.analysed_header)

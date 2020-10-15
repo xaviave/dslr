@@ -24,13 +24,6 @@ class LogReg(DatasetHandler):
         Override methods
     """
 
-    @staticmethod
-    def _exiting(exception=None, message="Error", mod=-1):
-        if exception:
-            logging.error(f"{exception}\n")
-        logging.error(f"{message}")
-        sys.exit(mod)
-
     def _add_parser_args(self, parser):
         super()._add_parser_args(parser)
         parser.add_argument(
@@ -63,7 +56,7 @@ class LogReg(DatasetHandler):
     def _get_options(self):
         super()._get_options()
         if self.get_args("classifier") is None:
-            self._exiting(message="classifier option not provided")
+            self._exit(message="classifier option not provided")
 
     """
         Private methods
@@ -90,7 +83,7 @@ class LogReg(DatasetHandler):
     def _stochastic_gradient_descent(self, dataset, theta, actual_y, y):
         for sample in dataset:
             print(f"sample= {sample}\ntheta={theta}\nactual_y={actual_y}\ny={y}")
-            sys.exit(-1)
+        self._exit("Not implemented")
 
     def __init__(
         self,
