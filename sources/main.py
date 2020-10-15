@@ -1,11 +1,8 @@
-from Parser.ArgParser import ArgParser
-from Parser.CSVParser import CSVParser
+from Tools.DatasetHandler import DatasetHandler
 
 
 def main():
-    args = ArgParser()
-    reader = CSVParser(args)
-    reader.csv_parser()
+    DatasetHandler(parse=True)
 
 
 if "__main__" == __name__:

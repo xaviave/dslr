@@ -1,3 +1,4 @@
+import inspect
 import logging
 import sys
 
@@ -9,12 +10,56 @@ import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_pdf import PdfPages
 
+from Tools.ArgParser import ArgParser
 
 logging.getLogger().setLevel(logging.INFO)
 
 
-class Visualiser:
+class Visualiser(ArgParser):
     raw_data: pd.DataFrame
+
+    """
+        Override methods
+    """
+
+    def _add_exclusive_args(self, parser):
+        visualiser_group = parser.add_mutually_exclusive_group(required=False)
+        visualiser_group.add_argument(
+            "-v",
+            "--visualiser",
+            action="store_const",
+            const=self._advanced_visualizer,
+            help="Render a tab to visualize data",
+            dest="type_visualizer",
+        )
+        visualiser_group.add_argument(
+            "-hh",
+            "--histogram",
+            action="store_const",
+            const=self._histogram_visualizer,
+            help="Render an histogram for a specific data",
+            dest="type_visualizer",
+        )
+        visualiser_group.add_argument(
+            "-sc",
+            "--scatter_plot",
+            action="store_const",
+            const=self._scatter_plot_visualizer,
+            help="Render a scatter plot graph for a specific data",
+            dest="type_visualizer",
+        )
+        visualiser_group.add_argument(
+            "-pp",
+            "--pair_plot",
+            action="store_const",
+            const=self._pair_plot_visualizer,
+            help="Render a pair plot graph for a specific data",
+            dest="type_visualizer",
+        )
+
+    """
+        Private methods
+    """
 
     @staticmethod
     def _save_as_pdf(figures):
@@ -22,8 +67,8 @@ class Visualiser:
             with PdfPages(f"data_visualizer{len(figures)}.pdf") as pdf:
                 for f in figures:
                     pdf.savefig(f, bbox_inches="tight")
-        except:
-            logging.error(f"Error while creating data_visualizer{len(figures)}.pdf")
+        except Exception as e:
+            logging.error(f"{e}\nError while creating data_visualizer{len(figures)}.pdf")
             sys.exit(-1)
 
     @staticmethod
@@ -69,6 +114,9 @@ class Visualiser:
 
     @staticmethod
     def _process_bar_data(raw_data, head):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
         stat = [
             raw_data.loc[lambda df: df["Hogwarts House"] == house, head]
             for house in ["Slytherin", "Ravenclaw", "Gryffindor", "Hufflepuff"]
@@ -79,11 +127,15 @@ class Visualiser:
         }
 
     def _histogram_visualizer(self, head):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
         hands = self._process_bar_data(self.raw_data, head)
         houses = set(self.raw_data.loc[:, "Hogwarts House"])
         x = np.arange(len(houses))
         width = 0.35
         fig, ax = plt.subplots()
+        # print(hands)
         rects1 = ax.bar(x - width / 2, hands["right"], width, label="Right")
         rects2 = ax.bar(x + width / 2, hands["left"], width, label="Left")
         ax.set_xticks(x)
@@ -94,7 +146,16 @@ class Visualiser:
         fig.tight_layout()
         return fig
 
-    def _scatter_visualizer(self, head):
+    def _pair_plot_visualizer(self, head):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
+        self._exit(message="Not implemented")
+
+    def _scatter_plot_visualizer(self, head):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
         fig = plt.figure()
         plt.scatter(
             x=tuple(self.raw_data.loc[:, head]), y=tuple(self.raw_data.loc[:, "Hogwarts House"])
@@ -103,6 +164,9 @@ class Visualiser:
 
     @staticmethod
     def _date_visualizer(x, y):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
         fig = plt.figure()
         plt.subplot(x, y)
         return fig
@@ -115,21 +179,34 @@ class Visualiser:
         return fig
 
     def _advanced_visualizer(self, header):
+        logging.warning(
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+        )
         logging.info("Creating tabs in pdf...")
         func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
         figures = [self._text_page()]
         for head in header:
-            figures.append(self._update_tab(head, func.get(head, self._scatter_visualizer)))
+            figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
         self._save_as_pdf(figures)
 
-    def __init__(self, raw_data):
-        self.raw_data = raw_data
+    @staticmethod
+    def _exit(exception=None, message="Error", mod=-1):
+        if exception:
+            logging.error(f"{exception}")
+        logging.error(f"{message}")
+        sys.exit(mod)
+
+    def __init__(self, func=_scatter_plot_visualizer):
+        # could add different matplotlib backend | for now to much work
+        super().__init__()
+        self.visualizer_func = self.get_args("type_visualizer", default_value=func)
+
+    """
+        Public methods
+    """
 
     def visualizer(self, header):
-        if self.raw_data.empty:
-            logging.error("Please init raw_data")
-            sys.exit(-1)
-        logging.info(self.raw_data.describe())
-        # here use next _describe from @lotoussa function
         matplotlib.use("pdf")
-        self._advanced_visualizer(header)
+        if self.raw_data.empty:
+            self._exit(message="Please init raw_data")
+        self.visualizer_func(header)
