@@ -20,7 +20,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     analysed_header: np.array
     argparse_file_name: str
     default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
-    default_header_file: str = os.path.join("sources", "Ressources", "analysed_header.npy")
+    default_header_file: str = os.path.join("sources", "Resources", "analysed_header.npy")
 
     """
         Override methods
