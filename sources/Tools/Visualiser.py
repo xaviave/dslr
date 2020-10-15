@@ -199,7 +199,7 @@ class Visualiser(ArgParser):
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
-        self.visualizer_func = self.get_args("type_visualizer", func)
+        self.visualizer_func = self.get_args("type_visualizer", default_value=func)
 
     """
         Public methods

@@ -153,6 +153,6 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         self._as_df(train, classifier=classifier)
 
     def visualize(self):
-        if self.get_args("type_visualizer"):
+        if self.get_args("type_visualizer") is not None:
             self.describe(headers=list(self.analysed_header), slice_print=6)
             self.visualizer(self.analysed_header)
