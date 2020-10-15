@@ -11,17 +11,19 @@ scores = []
 
 
 def test():
-    args = ArgParser()
-    # check if args of DatasetHandler is correct
-    # Finally, fix the test.py
-    dataset = DatasetHandler(args, parse=True, train=True)
     for _ in range(10):
         size = random.randint(20, 90) / 100
+        logi = LogReg(train=True, n_iteration=30000)
         x_train, x_test, y_train, y_test = train_test_split(
-            dataset.df, dataset.np_df_train, test_size=size
+            logi.df, logi.np_df_train, test_size=size
         )
-        logi = LogReg(n_iteration=30000)
-        logi.train(x_train, y_train)
+        logi.np_df = x_train
+        logi.np_df_train = y_train
+        logi.train(logi.np_df, logi.np_df_train)
+        logi.save_theta()
+        logi.load_theta()
+        prediction = logi.predict(x_test)
+        logi.write_to_csv(prediction, ["Hogwarts House"])
         score = logi.score(x_test, y_test)
         print(
             f"Train and test sample size {x_train.shape[0]}\n"
