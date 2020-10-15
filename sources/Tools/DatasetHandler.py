@@ -73,9 +73,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         self.load_header()
         self.header = list(self.raw_data.columns.values)
         if not all(h in self.header for h in self.analysed_header):
-            self._exit(
-                message="CSV file header doesn't contain enough data to analyse the dataset"
-            )
+            self._exit(message="CSV file header doesn't contain enough data to analyse the dataset")
 
     def _get_csv_file(self):
         logging.info(f"Reading dataset from file: {self.argparse_file_name}")
