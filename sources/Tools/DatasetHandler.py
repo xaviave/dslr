@@ -90,7 +90,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             try:
                 dataset[h] = dataset[h].apply(lambda x: x / max(dataset[h]))
             except ZeroDivisionError:
-                logging.warning(f"0 is max dats from {h} column")
+                logging.warning(f"0 is max data from {h} column")
                 dataset.drop(h)
         return dataset.to_numpy()
 
