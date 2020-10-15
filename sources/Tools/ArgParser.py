@@ -65,8 +65,9 @@ class ArgParser:
         Public methods
     """
 
-    def get_args(self, value: str, default=None):
+    def get_args(self, value: str, default_value=None):
         """
-        Allow to access directly and safely to a variable presentor not in the class
+        Allow to access directly and safely to a variable present or not in the class
         """
-        return vars(self.args).get(value, default)
+        ret = vars(self.args).get(value)
+        return ret if ret is not None else default_value
