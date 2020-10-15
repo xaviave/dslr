@@ -13,6 +13,7 @@ scores = []
 def test():
     args = ArgParser()
     # check if args of DatasetHandler is correct
+    # Finally, fix the test.py
     dataset = DatasetHandler(args, parse=True, train=True)
     for _ in range(10):
         size = random.randint(20, 90) / 100
