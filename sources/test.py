@@ -12,6 +12,7 @@ scores = []
 
 def test():
     args = ArgParser()
+    # check if args of DatasetHandler is correct
     dataset = DatasetHandler(args, parse=True, train=True)
     for _ in range(10):
         size = random.randint(20, 90) / 100
@@ -22,7 +23,8 @@ def test():
         logi.train(x_train, y_train)
         score = logi.score(x_test, y_test)
         print(
-            f"Train and test sample size {x_train.shape[0]}\nThe accuracy of the model is {score}"
+            f"Train and test sample size {x_train.shape[0]}\n"
+            f"The accuracy of the model is {score}"
         )
         scores.append(score)
     print(f"Mean accuracy is {np.mean(scores)}")

@@ -24,6 +24,13 @@ class LogReg(DatasetHandler):
         Override methods
     """
 
+    @staticmethod
+    def _exiting(exception=None, message="Error", mod=-1):
+        if exception:
+            logging.error(f"{exception}\n")
+        logging.error(f"{message}")
+        sys.exit(mod)
+
     def _add_parser_args(self, parser):
         super()._add_parser_args(parser)
         parser.add_argument(
@@ -41,23 +48,22 @@ class LogReg(DatasetHandler):
             "--batch_gradient_descent",
             action="store_const",
             const=self._batch_gradient_descent,
-            help="Use batch gradient desscent as optimisation algorithm (default value)",
+            help="Use batch gradient descent as optimisation algorithm (default value)",
             dest="type_gradient",
         )
         gradient_group.add_argument(
             "-sgd",
-            "--stachostic_gradient_descent",
+            "--stochastic_gradient_descent",
             action="store_const",
             const=self._stochastic_gradient_descent,
-            help="Use stachostic gradient desscent as optimisation algorithm",
+            help="Use stochastic gradient descent as optimisation algorithm",
             dest="type_gradient",
         )
 
     def _get_options(self):
         super()._get_options()
         if self.get_args("classifier") is None:
-            logging.error("classifier option not provided")
-            sys.exit(-1)
+            self._exiting(message="classifier option not provided")
 
     """
         Private methods
@@ -85,9 +91,7 @@ class LogReg(DatasetHandler):
         return theta, cost
 
     def _stochastic_gradient_descent(self):
-        logging.error("Not implemented, use batch_gradient_descent")
-        sys.exit(-1)
-        pass
+        self._exiting(message="Not implemented, use batch_gradient_descent")
 
     def __init__(
         self,

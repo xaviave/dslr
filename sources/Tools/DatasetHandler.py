@@ -20,11 +20,18 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     analysed_header: np.array
     argparse_file_name: str
     default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
-    default_header_file: str = os.path.join("sources", "Ressources", "analysed_header.npy")
+    default_header_file: str = os.path.join("sources", "Resources", "analysed_header.npy")
 
     """
         Override methods
     """
+
+    @staticmethod
+    def _exiting(exception=None, message="Error", mod=-1):
+        if exception:
+            logging.error(f"{exception}\n")
+        logging.error(f"{message}")
+        sys.exit(mod)
 
     def _add_parser_args(self, parser):
         super()._add_parser_args(parser)
@@ -44,8 +51,9 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             not os.path.exists(self.argparse_file_name)
             or os.path.splitext(self.argparse_file_name)[1] != ".csv"
         ):
-            logging.error("The file doesn't exist or is in the wrong format\nProvide a CSV file")
-            sys.exit(-1)
+            self._exiting(
+                message="The file doesn't exist or is in the wrong format\nProvide a CSV file"
+            )
 
     """
         Private methods
@@ -69,15 +77,16 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
 
     def _check_header(self):
         """
-        The logisitc regression is all about data.
+        The logistic regression is all about data.
         Well choose headers from a list of header in a dataset is the main data analysis part
         this function is oriented for machine learning programs
         """
         self.load_header()
         self.header = list(self.raw_data.columns.values)
         if not all(h in self.header for h in self.analysed_header):
-            logging.error("CSV file header doesn't contain enough data to analyse the dataset")
-            sys.exit(-1)
+            self._exiting(
+                message="CSV file header doesn't contain enough data to analyse the dataset"
+            )
 
     def _get_csv_file(self):
         logging.info(f"Reading dataset from file: {self.argparse_file_name}")
@@ -85,8 +94,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             self.raw_data = pd.read_csv(f"{os.path.abspath(self.argparse_file_name)}")
             self.raw_data.fillna(0, inplace=True)
         except Exception:
-            logging.error(f"Error while processing {self.argparse_file_name}")
-            sys.exit(-1)
+            self._exiting(message=f"Error while processing {self.argparse_file_name}")
         self._check_header()
 
     @staticmethod

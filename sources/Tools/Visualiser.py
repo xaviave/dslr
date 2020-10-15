@@ -22,6 +22,13 @@ class Visualiser(ArgParser):
         Override methods
     """
 
+    @staticmethod
+    def _exiting(exception=None, message="Error", mod=-1):
+        if exception:
+            logging.error(f"{exception}\n")
+        logging.error(f"{message}")
+        sys.exit(mod)
+
     def _add_exclusive_args(self, parser):
         visualiser_group = parser.add_mutually_exclusive_group(required=False)
         visualiser_group.add_argument(
@@ -29,7 +36,7 @@ class Visualiser(ArgParser):
             "--visualiser",
             action="store_const",
             const=self._advanced_visualizer,
-            help="Render a tab to vizualize data",
+            help="Render a tab to visualize data",
             dest="type_visualizer",
         )
         visualiser_group.add_argument(
@@ -115,7 +122,7 @@ class Visualiser(ArgParser):
     @staticmethod
     def _process_bar_data(raw_data, head):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
         stat = [
             raw_data.loc[lambda df: df["Hogwarts House"] == house, head]
@@ -128,7 +135,7 @@ class Visualiser(ArgParser):
 
     def _histogram_visualizer(self, head):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
         hands = self._process_bar_data(self.raw_data, head)
         houses = set(self.raw_data.loc[:, "Hogwarts House"])
@@ -148,14 +155,13 @@ class Visualiser(ArgParser):
 
     def _pair_plot_visualizer(self, head):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
-        logging.error("Not implemented")
-        sys.exit(-1)
+        self._exiting(message="Not implemented")
 
     def _scatter_plot_visualizer(self, head):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
         fig = plt.figure()
         plt.scatter(
@@ -166,7 +172,7 @@ class Visualiser(ArgParser):
     @staticmethod
     def _date_visualizer(x, y):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
         fig = plt.figure()
         plt.subplot(x, y)
@@ -181,7 +187,7 @@ class Visualiser(ArgParser):
 
     def _advanced_visualizer(self, header):
         logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refacto - No hard coded data please"
+            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
         logging.info("Creating tabs in pdf...")
         func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
@@ -202,6 +208,5 @@ class Visualiser(ArgParser):
     def visualizer(self, header):
         matplotlib.use("pdf")
         if self.raw_data.empty:
-            logging.error("Please init raw_data")
-            sys.exit(-1)
+            self._exiting(message="Please init raw_data")
         self.visualizer_func(header)
