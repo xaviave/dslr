@@ -10,27 +10,6 @@ from sklearn.model_selection import train_test_split
 from Tools.LogReg import LogReg
 
 
-def get_dataset():
-    file_name = os.path.join("data", "datasets", "dataset_test.csv")
-    raw_data = pd.read_csv(file_name)
-    return pd.DataFrame(
-        data=raw_data,
-        columns=[
-            "Astronomy",
-            "Herbology",
-            "Defense Against the Dark Arts",
-            "Divination",
-            "Muggle Studies",
-            "Ancient Runes",
-            "History of Magic",
-            "Transfiguration",
-            "Potions",
-            "Charms",
-            "Flying",
-        ],
-    ).to_numpy()
-
-
 def test():
     scores = []
     timer = []
