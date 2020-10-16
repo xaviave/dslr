@@ -1,7 +1,6 @@
 import os
 import logging
 import datetime
-import sys
 import warnings
 
 import numpy as np
@@ -15,6 +14,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class LogReg(DatasetHandler):
     cost: list
+    batch: int
     theta: list
     n_iter: int
     alpha: float
@@ -63,35 +63,61 @@ class LogReg(DatasetHandler):
     """
 
     @staticmethod
-    def _sigmoid(x):
-        return 1 / (1 + np.exp(-x))
+    def _slice(dataset, y_train, len_batch):
+        indices = np.random.permutation(dataset.shape[0])
+        return dataset[indices[:len_batch]], y_train[indices[:len_batch]]
 
-    @staticmethod
-    def _cost_function(h, y):
-        m = len(y)
-        return (1 / m) * (np.sum(-y.T.dot(np.log(h)) - (1 - y).T.dot(np.log(1 - h))))
+    def _sigmoid(self, x):
+        try:
+            return 1 / (1 + np.exp(-x))
+        except Exception as e:
+            self._exit(exception=e, message="Error during _sigmoid")
+
+    def _cost_function(self, h, y):
+        try:
+            m = len(y)
+            return (1 / m) * (np.sum(-y.T.dot(np.log(h)) - (1 - y).T.dot(np.log(1 - h))))
+        except Exception as e:
+            self._exit(exception=e, message="Error during _cost_function")
 
     def _gradient_descent(self, dataset, h, y, m):
-        return self.alpha * (np.dot(dataset.T, (h - y)) / m)
+        try:
+            return self.alpha * np.dot(dataset.T, (h - y)) / m
+        except Exception as e:
+            self._exit(exception=e, message="Error during _gradient_descent")
 
-    def _batch_gradient_descent(self, dataset, theta, actual_y, y):
+    def _batch_gradient_descent(self, dataset, actual_y):
+        theta = np.zeros(dataset.shape[1])
         for _ in range(self.n_iter):
             h = self._sigmoid(dataset.dot(theta))
-            theta -= self._gradient_descent(dataset, h, actual_y, len(y))
+            theta = theta - self._gradient_descent(dataset, h, actual_y, len(dataset))
         return theta
 
-    def _stochastic_gradient_descent(self, dataset, theta, actual_y, y):
-        self._exit("Not implemented")
+    def _stochastic_gradient_descent(self, dataset, actual_y):
+        theta = np.zeros(dataset.shape[1])
+        try:
+            len_batch = int(len(dataset) / self.batch)
+            for _ in range(self.n_iter):
+                dataset_train, actual_y_train = self._slice(dataset, actual_y, len_batch)
+                h = self._sigmoid(dataset_train.dot(theta))
+                theta = theta - self._gradient_descent(
+                    dataset_train, h, actual_y_train, len(dataset_train)
+                )
+        except Exception as e:
+            self._exit(exception=e, message="Error during _stochastic_gradient_descent")
+        return theta
 
     def __init__(
         self,
         train: bool = False,
         alpha: float = 0.01,
+        batch: int = 35,
         n_iteration: int = 3000,
         theta_file_name: str = "generated_theta.npy",
     ):
         super().__init__(parse=True, train=train)
         self.alpha = alpha
+        self.batch = batch
         self.n_iter = n_iteration
         self.theta_file_name = os.path.abspath(theta_file_name)
         self.gradient_func = self.get_args(
@@ -114,10 +140,10 @@ class LogReg(DatasetHandler):
         self.theta = []
         start = datetime.datetime.now()
         logging.info("Fitting the given dataset.")
-        dataset = np.insert(np.nan_to_num(dataset, copy=False), 0, 1, axis=1)
+        dataset = np.insert(np.nan_to_num(dataset), 0, 1, axis=1)
         for i in np.unique(y):
             actual_y = np.where(y == i, 1, 0)
-            theta = self.gradient_func(dataset, np.zeros(dataset.shape[1]), actual_y, y)
+            theta = self.gradient_func(dataset, actual_y)
             self.theta.append((theta, i))
         logging.info(f"timer={datetime.datetime.now() - start}: Training finish")
 
@@ -128,4 +154,7 @@ class LogReg(DatasetHandler):
         ]
 
     def score(self, dataset, y):
-        return sum(self.predict(dataset) == y) / len(y)
+        try:
+            return sum(self.predict(dataset) == y) / len(y)
+        except Exception as e:
+            self._exit(exception=e, message="Error during _score")
