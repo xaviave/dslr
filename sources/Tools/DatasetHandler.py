@@ -18,7 +18,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     np_df: np.ndarray
     np_df_train: np.ndarray
     analysed_header: np.array
-    argparse_file_name: str
+    csv_file_name: str
     default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
     default_header_file: str = os.path.join("sources", "Resources", "analysed_header.npy")
 
@@ -37,12 +37,12 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         )
 
     def _get_options(self):
-        self.argparse_file_name = self.args.csv_file
-        if self.argparse_file_name == self.default_dataset:
+        self.csv_file_name = self.args.csv_file
+        if self.csv_file_name == self.default_dataset:
             logging.info("Using default dataset CSV file")
         if (
-            not os.path.exists(self.argparse_file_name)
-            or os.path.splitext(self.argparse_file_name)[1] != ".csv"
+            not os.path.exists(self.csv_file_name)
+            or os.path.splitext(self.csv_file_name)[1] != ".csv"
         ):
             self._exit(
                 message="The file doesn't exist or is in the wrong format\nProvide a CSV file"
@@ -76,13 +76,11 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
             self._exit(message="CSV file header doesn't contain enough data to analyse the dataset")
 
     def _get_csv_file(self):
-        logging.info(f"Reading dataset from file: {self.argparse_file_name}")
+        logging.info(f"Reading dataset from file: {self.csv_file_name}")
         try:
-            self.raw_data = pd.read_csv(f"{os.path.abspath(self.argparse_file_name)}")
-            self.raw_data.fillna(0, inplace=True)
+            self.raw_data = pd.read_csv(f"{os.path.abspath(self.csv_file_name)}")
         except Exception:
-            self._exit(message=f"Error while processing {self.argparse_file_name}")
-        self._check_header()
+            self._exit(message=f"Error while processing {self.csv_file_name}")
 
     @staticmethod
     def _normalise(dataset: pd.DataFrame):
@@ -95,6 +93,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         return dataset.to_numpy()
 
     def _as_df(self, train: bool, classifier: str = None):
+        self.raw_data.fillna(0, inplace=True)
         self.df = pd.DataFrame(data=self.raw_data, columns=self.analysed_header)
         self.np_df = self._normalise(self.df)
         if train and classifier is not None:
@@ -114,16 +113,6 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Public methods
     """
 
-    def write_to_csv(self, dataset: list, columns: list):
-        tmp_dataset = pd.DataFrame(data=dataset)
-        tmp_dataset.index.name = "Index"
-        tmp_dataset.columns = columns
-        try:
-            with open(os.path.abspath("houses.csv"), "w") as file:
-                file.write(tmp_dataset.to_csv())
-        except Exception as e:
-            self._exit(exception=e)
-
     def save_header(self, header_file: str = default_header_file):
         self._save_npy(header_file, self.analysed_header)
 
@@ -138,9 +127,20 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         )
 
     def csv_parser(self, train: bool = False, classifier: str = None):
+        self._check_header()
         self._as_df(train, classifier=classifier)
 
     def visualize(self):
         if self.get_args("type_visualizer") is not None:
             self.describe(headers=list(self.analysed_header), slice_print=4)
             self.visualizer(self.analysed_header)
+
+    def write_to_csv(self, file_name: str, dataset: list, columns: list):
+        tmp_dataset = pd.DataFrame(data=dataset)
+        tmp_dataset.index.name = "Index"
+        tmp_dataset.columns = columns
+        try:
+            with open(os.path.abspath(file_name), "w") as file:
+                file.write(tmp_dataset.to_csv())
+        except Exception as e:
+            self._exit(exception=e)
