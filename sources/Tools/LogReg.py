@@ -43,15 +43,15 @@ class LogReg(DatasetHandler):
             "--batch_gradient_descent",
             action="store_const",
             const=self._batch_gradient_descent,
-            help="Use batch gradient desscent as optimisation algorithm (default value)",
+            help="Use batch gradient descent as optimisation algorithm (default value)",
             dest="type_gradient",
         )
         gradient_group.add_argument(
             "-sgd",
-            "--stachostic_gradient_descent",
+            "--stochastic_gradient_descent",
             action="store_const",
             const=self._stochastic_gradient_descent,
-            help="Use stachostic gradient desscent as optimisation algorithm",
+            help="Use stochastic gradient descent as optimisation algorithm",
             dest="type_gradient",
         )
 
