@@ -1,8 +1,6 @@
 import os
 import logging
 import datetime
-import random
-import sys
 import warnings
 
 import numpy as np
@@ -58,8 +56,7 @@ class LogReg(DatasetHandler):
     def _get_options(self):
         super()._get_options()
         if self.get_args("classifier") is None:
-            logging.error("classifier option not provided")
-            sys.exit(-1)
+            self._exit(message="classifier option not provided")
 
     """
         Private methods
