@@ -67,17 +67,24 @@ class LogReg(DatasetHandler):
         indices = np.random.permutation(dataset.shape[0])
         return dataset[indices[:len_batch]], y_train[indices[:len_batch]]
 
-    @staticmethod
-    def _sigmoid(x):
-        return 1 / (1 + np.exp(-x))
+    def _sigmoid(self, x):
+        try:
+            return 1 / (1 + np.exp(-x))
+        except Exception as e:
+            self._exit(exception=e, message="Error during _sigmoid")
 
-    @staticmethod
-    def _cost_function(h, y):
-        m = len(y)
-        return (1 / m) * (np.sum(-y.T.dot(np.log(h)) - (1 - y).T.dot(np.log(1 - h))))
+    def _cost_function(self, h, y):
+        try:
+            m = len(y)
+            return (1 / m) * (np.sum(-y.T.dot(np.log(h)) - (1 - y).T.dot(np.log(1 - h))))
+        except Exception as e:
+            self._exit(exception=e, message="Error during _cost_function")
 
     def _gradient_descent(self, dataset, h, y, m):
-        return self.alpha * np.dot(dataset.T, (h - y)) / m
+        try:
+            return self.alpha * np.dot(dataset.T, (h - y)) / m
+        except Exception as e:
+            self._exit(exception=e, message="Error during _gradient_descent")
 
     def _batch_gradient_descent(self, dataset, actual_y):
         theta = np.zeros(dataset.shape[1])
@@ -88,13 +95,16 @@ class LogReg(DatasetHandler):
 
     def _stochastic_gradient_descent(self, dataset, actual_y):
         theta = np.zeros(dataset.shape[1])
-        len_batch = int(len(dataset) / self.batch)
-        for _ in range(self.n_iter):
-            dataset_train, actual_y_train = self._slice(dataset, actual_y, len_batch)
-            h = self._sigmoid(dataset_train.dot(theta))
-            theta = theta - self._gradient_descent(
-                dataset_train, h, actual_y_train, len(dataset_train)
-            )
+        try:
+            len_batch = int(len(dataset) / self.batch)
+            for _ in range(self.n_iter):
+                dataset_train, actual_y_train = self._slice(dataset, actual_y, len_batch)
+                h = self._sigmoid(dataset_train.dot(theta))
+                theta = theta - self._gradient_descent(
+                    dataset_train, h, actual_y_train, len(dataset_train)
+                )
+        except Exception as e:
+            self._exit(exception=e, message="Error during _stochastic_gradient_descent")
         return theta
 
     def __init__(
@@ -144,4 +154,7 @@ class LogReg(DatasetHandler):
         ]
 
     def score(self, dataset, y):
-        return sum(self.predict(dataset) == y) / len(y)
+        try:
+            return sum(self.predict(dataset) == y) / len(y)
+        except Exception as e:
+            self._exit(exception=e, message="Error during _score")
