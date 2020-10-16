@@ -81,8 +81,6 @@ class LogReg(DatasetHandler):
         return theta
 
     def _stochastic_gradient_descent(self, dataset, theta, actual_y, y):
-        for sample in dataset:
-            print(f"sample= {sample}\ntheta={theta}\nactual_y={actual_y}\ny={y}")
         self._exit("Not implemented")
 
     def __init__(
