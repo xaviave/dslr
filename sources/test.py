@@ -1,34 +1,51 @@
+import os
 import random
 
 import numpy as np
+import pandas as pd
+
+from datetime import datetime
 from sklearn.model_selection import train_test_split
 
 from Tools.LogReg import LogReg
-from Tools.ArgParser import ArgParser
-from Tools.DatasetHandler import DatasetHandler
-
-scores = []
 
 
 def test():
-    args = ArgParser()
-    # check if args of DatasetHandler is correct
-    # Finally, fix the test.py
-    dataset = DatasetHandler(args, parse=True, train=True)
+    scores = []
+    timer = []
     for _ in range(10):
-        size = random.randint(20, 90) / 100
+        """
+        training
+        """
+        size = random.randint(50, 90) / 100
+        start = datetime.now()
+        logi = LogReg(train=True, n_iteration=30000)
         x_train, x_test, y_train, y_test = train_test_split(
-            dataset.df, dataset.np_df_train, test_size=size
+            logi.df, logi.np_df_train, test_size=size
         )
-        logi = LogReg(n_iteration=30000)
-        logi.train(x_train, y_train)
+        logi.np_df = x_train
+        logi.np_df_train = y_train
+        logi.train(logi.np_df, logi.np_df_train)
+        logi.save_theta()
+        timer.append(datetime.now() - start)
+        """
+            Predict
+        """
+        logi.load_theta()
+        test_prediction = logi.predict(x_test)
+        logi.write_to_csv("test_houses.csv", test_prediction, ["Hogwarts House"])
+        """
+            Test
+        """
         score = logi.score(x_test, y_test)
         print(
-            f"Train and test sample size {x_train.shape[0]}\n"
-            f"The accuracy of the model is {score}"
+            f"""
+            Train sample size {x_train.shape[0]}
+            The accuracy of the model is {score}
+            """
         )
         scores.append(score)
-    print(f"Mean accuracy is {np.mean(scores)}")
+    print(f"Mean accuracy is {np.mean(scores)}\nMean time is {np.mean(timer)}")
 
 
 if "__main__" == __name__:
