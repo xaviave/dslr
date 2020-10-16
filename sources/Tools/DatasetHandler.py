@@ -114,12 +114,12 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Public methods
     """
 
-    def write_to_csv(self, dataset: list, columns: list):
+    def write_to_csv(self, file_name: str, dataset: list, columns: list):
         tmp_dataset = pd.DataFrame(data=dataset)
         tmp_dataset.index.name = "Index"
         tmp_dataset.columns = columns
         try:
-            with open(os.path.abspath("houses.csv"), "w") as file:
+            with open(os.path.abspath(file_name), "w") as file:
                 file.write(tmp_dataset.to_csv())
         except Exception as e:
             self._exit(exception=e)

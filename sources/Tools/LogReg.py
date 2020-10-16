@@ -1,6 +1,7 @@
 import os
 import logging
 import datetime
+import random
 import sys
 import warnings
 
@@ -15,6 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class LogReg(DatasetHandler):
     cost: list
+    batch: int
     theta: list
     n_iter: int
     alpha: float
@@ -41,26 +43,32 @@ class LogReg(DatasetHandler):
             "--batch_gradient_descent",
             action="store_const",
             const=self._batch_gradient_descent,
-            help="Use batch gradient descent as optimisation algorithm (default value)",
+            help="Use batch gradient desscent as optimisation algorithm (default value)",
             dest="type_gradient",
         )
         gradient_group.add_argument(
             "-sgd",
-            "--stochastic_gradient_descent",
+            "--stachostic_gradient_descent",
             action="store_const",
             const=self._stochastic_gradient_descent,
-            help="Use stochastic gradient descent as optimisation algorithm",
+            help="Use stachostic gradient desscent as optimisation algorithm",
             dest="type_gradient",
         )
 
     def _get_options(self):
         super()._get_options()
         if self.get_args("classifier") is None:
-            self._exit(message="classifier option not provided")
+            logging.error("classifier option not provided")
+            sys.exit(-1)
 
     """
         Private methods
     """
+
+    @staticmethod
+    def _slice(dataset, y_train, len_batch):
+        indices = np.random.permutation(dataset.shape[0])
+        return dataset[indices[:len_batch]], y_train[indices[:len_batch]]
 
     @staticmethod
     def _sigmoid(x):
@@ -71,32 +79,38 @@ class LogReg(DatasetHandler):
         m = len(y)
         return (1 / m) * (np.sum(-y.T.dot(np.log(h)) - (1 - y).T.dot(np.log(1 - h))))
 
-    def _gradient_descent(self, dataset, h, theta, y, m):
-        theta -= self.alpha * np.dot(dataset.T, (h - y)) / m
-        return theta
+    def _gradient_descent(self, dataset, h, y, m):
+        return self.alpha * np.dot(dataset.T, (h - y)) / m
 
-    def _batch_gradient_descent(self, dataset, theta, actual_y, len_y):
-        cost = []
+    def _batch_gradient_descent(self, dataset, actual_y):
+        theta = np.zeros(dataset.shape[1])
         for _ in range(self.n_iter):
             h = self._sigmoid(dataset.dot(theta))
-            theta = self._gradient_descent(dataset, h, theta, actual_y, len_y)
-            cost.append(self._cost_function(h, actual_y))
-        return theta, cost
+            theta = theta - self._gradient_descent(dataset, h, actual_y, len(dataset))
+        return theta
 
-    def _stochastic_gradient_descent(self, dataset, theta, actual_y, y):
-        for sample in dataset:
-            print(f"sample= {sample}\ntheta={theta}\nactual_y={actual_y}\ny={y}")
-        self._exit("Not implemented")
+    def _stochastic_gradient_descent(self, dataset, actual_y):
+        theta = np.zeros(dataset.shape[1])
+        len_batch = int(len(dataset) / self.batch)
+        for _ in range(self.n_iter):
+            dataset_train, actual_y_train = self._slice(dataset, actual_y, len_batch)
+            h = self._sigmoid(dataset_train.dot(theta))
+            theta = theta - self._gradient_descent(
+                dataset_train, h, actual_y_train, len(dataset_train)
+            )
+        return theta
 
     def __init__(
         self,
         train: bool = False,
         alpha: float = 0.01,
+        batch: int = 35,
         n_iteration: int = 3000,
         theta_file_name: str = "generated_theta.npy",
     ):
         super().__init__(parse=True, train=train)
         self.alpha = alpha
+        self.batch = batch
         self.n_iter = n_iteration
         self.theta_file_name = os.path.abspath(theta_file_name)
         self.gradient_func = self.get_args(
@@ -116,17 +130,14 @@ class LogReg(DatasetHandler):
         self._save_npy(self.theta_file_name, self.theta)
 
     def train(self, dataset, y):
-        self.cost = []
         self.theta = []
         start = datetime.datetime.now()
         logging.info("Fitting the given dataset.")
         dataset = np.insert(np.nan_to_num(dataset), 0, 1, axis=1)
         for i in np.unique(y):
             actual_y = np.where(y == i, 1, 0)
-            theta, cost = self.gradient_func(dataset, np.zeros(dataset.shape[1]), actual_y, len(y))
+            theta = self.gradient_func(dataset, actual_y)
             self.theta.append((theta, i))
-            self.cost.append((cost, i))
-        print(self.theta)
         logging.info(f"timer={datetime.datetime.now() - start}: Training finish")
 
     def predict(self, dataset):
