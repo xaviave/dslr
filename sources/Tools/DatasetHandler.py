@@ -19,7 +19,13 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     analysed_header: np.array
     csv_file_name: str
     default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
-    default_header_file: str = os.path.join("sources", "Resources", "analysed_header.npy")
+    resources_dir = os.path.join("sources", "Resources")
+    default_header_files: dict = {
+        "advanced": os.path.join(resources_dir, "analysed_header.npy"),
+        "histogram": os.path.join(resources_dir, "histogram_header.npy"),
+        "scatter": os.path.join(resources_dir, "scatter_header.npy"),
+        "pair": os.path.join(resources_dir, "pair_header.npy"),
+    }
 
     """
         Override methods
@@ -112,10 +118,17 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Public methods
     """
 
-    def save_header(self, header_file: str = default_header_file):
+    def save_header(self, header_file: str = default_header_files["advanced"]):
         self._save_npy(header_file, self.analysed_header)
 
-    def load_header(self, header_file: str = default_header_file):
+    def load_header(self):
+        # test if not crash with all program
+        header_file = self.default_header_files[self.header_visualizer]
+        print(self.header_visualizer)
+        print(self.func_visualizer)
+        print('\n', header_file)
+        # uncomment to create file for adapted visualizer
+        # self._save_npy(header_file, ["", "", ""])
         self.analysed_header = self._load_npy(header_file)
 
     def describe(self, **kwargs):

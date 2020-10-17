@@ -28,7 +28,7 @@ class Visualiser(ArgParser):
             "-v",
             "--visualiser",
             action="store_const",
-            const=self._advanced_visualizer,
+            const={"advanced": self._advanced_visualizer},
             help="Render a tab to visualize data",
             dest="type_visualizer",
         )
@@ -36,7 +36,7 @@ class Visualiser(ArgParser):
             "-hh",
             "--histogram",
             action="store_const",
-            const=self._histogram_visualizer,
+            const={"histogram": self._histogram_visualizer},
             help="Render an histogram for a specific data",
             dest="type_visualizer",
         )
@@ -44,7 +44,7 @@ class Visualiser(ArgParser):
             "-sc",
             "--scatter_plot",
             action="store_const",
-            const=self._scatter_plot_visualizer,
+            const={"scatter": self._scatter_plot_visualizer},
             help="Render a scatter plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -52,7 +52,7 @@ class Visualiser(ArgParser):
             "-pp",
             "--pair_plot",
             action="store_const",
-            const=self._pair_plot_visualizer,
+            const={"pair": self._pair_plot_visualizer},
             help="Render a pair plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -127,11 +127,16 @@ class Visualiser(ArgParser):
             "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
-    def _histogram_visualizer(self, head):
+    def _histogram_visualizer(self, header):
         logging.warning(
             f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
         )
-        hands = self._process_bar_data(self.raw_data, head)
+        # header que je veux: Arithmancy, Transfiguration, Care of Magical Creatures
+        # un histogram pour chaque header
+        # dans cet histogram: 4 maisons, leurs valeur
+        print('\n\n', header, '\n\n')
+        hands = self._process_bar_data(self.raw_data, header)
+        print(hands)
         houses = set(self.raw_data.loc[:, "Hogwarts House"])
         x = np.arange(len(houses))
         width = 0.35
@@ -200,7 +205,13 @@ class Visualiser(ArgParser):
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
-        self.visualizer_func = self.get_args("type_visualizer", default_value=func)
+        # check this setter for every program usable to prevent crash
+        for k, v in self.get_args(
+                "type_visualizer",
+                default_value={"advanced": func}
+        ).items():
+            self.header_visualizer = k
+            self.func_visualizer = v
 
     """
         Public methods
@@ -210,4 +221,4 @@ class Visualiser(ArgParser):
         matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
-        self.visualizer_func(header)
+        self.func_visualizer(header)
