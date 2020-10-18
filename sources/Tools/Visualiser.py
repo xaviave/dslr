@@ -8,7 +8,6 @@ import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_pdf import PdfPages
-from typing import List
 
 from Tools.ArgParser import ArgParser
 
@@ -17,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class Visualiser(ArgParser):
     raw_data: pd.DataFrame
-    houses: list
+    houses: np.ndarray
 
     """
         Override methods
@@ -137,7 +136,7 @@ class Visualiser(ArgParser):
             kde_xs = np.linspace(mn, mx, 301)
             kde = st.gaussian_kde(data)
             plt.plot(kde_xs, kde.pdf(kde_xs), label=elem)
-            plt.title(f"{elem} {feature}")
+            plt.title(f"Homogeneity between the four houses '{feature}")
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.yticks([])
@@ -199,12 +198,6 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
-    def _list_set_by_column(self, column) -> List[set]:
-        try:
-            return list(set(self.raw_data.loc[:, column]))
-        except Exception as e:
-            self._exit(exception=e, message=f"Error while create set of raw_data[{column}]")
-
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
@@ -221,5 +214,5 @@ class Visualiser(ArgParser):
         # matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
-        self.houses = self._list_set_by_column("Hogwarts House")
+        self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
         self.func_visualizer(header)
