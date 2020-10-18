@@ -2,10 +2,9 @@ import inspect
 import logging
 import sys
 
-import matplotlib
-
 import numpy as np
 import pandas as pd
+import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_pdf import PdfPages
@@ -17,6 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class Visualiser(ArgParser):
     raw_data: pd.DataFrame
+    houses: list
 
     """
         Override methods
@@ -127,30 +127,26 @@ class Visualiser(ArgParser):
             "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
+    @staticmethod
+    def _create_histogram(feature, raw_data, filters, picker="Hogwarts House", xlabel="Marks", ylabel="Students"):
+        for elem in filters:
+            data = raw_data.loc[raw_data[picker] == elem, feature]
+            plt.hist(data, density=True, bins=30, alpha=0.5)
+            mn, mx = plt.xlim()
+            plt.xlim(mn, mx)
+            kde_xs = np.linspace(mn, mx, 301)
+            kde = st.gaussian_kde(data)
+            plt.plot(kde_xs, kde.pdf(kde_xs), label=elem)
+            plt.title(f"{elem} {feature}")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.yticks([])
+        plt.legend(filters, loc="upper left")
+        plt.show()
+
     def _histogram_visualizer(self, header):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        # header que je veux: Arithmancy, Transfiguration, Care of Magical Creatures
-        # un histogram pour chaque header
-        # dans cet histogram: 4 maisons, leurs valeur
-        print('\n\n', header, '\n\n')
-        hands = self._process_bar_data(self.raw_data, header)
-        print(hands)
-        houses = set(self.raw_data.loc[:, "Hogwarts House"])
-        x = np.arange(len(houses))
-        width = 0.35
-        fig, ax = plt.subplots()
-        # print(hands)
-        rects1 = ax.bar(x - width / 2, hands["right"], width, label="Right")
-        rects2 = ax.bar(x + width / 2, hands["left"], width, label="Left")
-        ax.set_xticks(x)
-        ax.set_xticklabels(houses)
-        ax.legend()
-        self._auto_label(ax, rects1)
-        self._auto_label(ax, rects2)
-        fig.tight_layout()
-        return fig
+        for feature in header:
+            self._create_histogram(feature, self.raw_data, self.houses)
 
     def _pair_plot_visualizer(self, head):
         logging.warning(
@@ -202,6 +198,10 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
+    @property
+    def _get_houses(self):
+        return list(set(self.raw_data.loc[:, "Hogwarts House"]))
+
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
@@ -218,7 +218,8 @@ class Visualiser(ArgParser):
     """
 
     def visualizer(self, header):
-        matplotlib.use("pdf")
+        # matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
+        self.houses = self._get_houses
         self.func_visualizer(header)
