@@ -8,6 +8,7 @@ import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_pdf import PdfPages
+from typing import List
 
 from Tools.ArgParser import ArgParser
 
@@ -197,9 +198,11 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
-    @property
-    def _get_houses(self):
-        return list(set(self.raw_data.loc[:, "Hogwarts House"]))
+    def _list_set_by_column(self, column) -> List[set]:
+        try:
+            return list(set(self.raw_data.loc[:, column]))
+        except Exception as e:
+            self._exit(exception=e, message=f"Error while create set of raw_data[{column}]")
 
     def __init__(self, func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
@@ -217,5 +220,5 @@ class Visualiser(ArgParser):
         # matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
-        self.houses = self._get_houses
+        self.houses = self._list_set_by_column("Hogwarts House")
         self.func_visualizer(header)
