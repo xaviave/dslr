@@ -1,6 +1,7 @@
 import inspect
 import logging
 import sys
+import matplotlib
 
 import numpy as np
 import pandas as pd
@@ -125,28 +126,49 @@ class Visualiser(ArgParser):
         }
 
     @staticmethod
+    def _pick_by_elements(raw_data, filters, column_filter, feature):
+        return [raw_data.loc[raw_data[column_filter] == element, feature] for element in filters]
+
+    @staticmethod
     def _create_histogram(
-        feature, raw_data, filters, picker="Hogwarts House", xlabel="Marks", ylabel="Students"
+        raw_data: list, title="Histogram", kde_label=None, xlabel="x", ylabel="y", yticks=None
     ):
-        for elem in filters:
-            data = raw_data.loc[raw_data[picker] == elem, feature]
+        fig = plt.figure()
+        for index, data in enumerate(raw_data):
             plt.hist(data, density=True, bins=30, alpha=0.5)
-            mn, mx = plt.xlim()
-            plt.xlim(mn, mx)
-            kde_xs = np.linspace(mn, mx, 301)
-            kde = st.gaussian_kde(data)
-            plt.plot(kde_xs, kde.pdf(kde_xs), label=elem)
-            plt.title(f"Homogeneity between the four houses '{feature}")
+            if kde_label is not None:
+                mn, mx = plt.xlim()
+                plt.xlim(mn, mx)
+                kde_xs = np.linspace(mn, mx, 301)
+                kde = st.gaussian_kde(data)
+                plt.plot(kde_xs, kde.pdf(kde_xs), label=kde_label[index])
+        plt.title(title)
+        plt.legend(kde_label, loc="upper left")
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.yticks([])
-        plt.legend(filters, loc="upper left")
-        # don't show, just save as pdf
-        plt.show()
+        plt.yticks([] if yticks is None else yticks)
+        plt.close()
+        return fig
 
     def _histogram_visualizer(self, header):
+        figures = [self._text_page()]
         for feature in header:
-            self._create_histogram(feature, self.raw_data, self.houses)
+            try:
+                filtered_data = self._pick_by_elements(
+                    self.raw_data, self.houses, "Hogwarts House", feature
+                )
+                figures.append(
+                    self._create_histogram(
+                        filtered_data,
+                        title=f"Homogeneity between the four houses '{feature}",
+                        kde_label=self.houses,
+                        xlabel="Marks",
+                        ylabel="Students",
+                    )
+                )
+            except Exception as e:
+                self._exit(exception=e, message="Error while creating histogram visualizer")
+        self._save_as_pdf("histogram_visualizer", figures)
 
     def _pair_plot_visualizer(self, head):
         logging.warning(
@@ -203,8 +225,7 @@ class Visualiser(ArgParser):
         super().__init__()
         # check this setter for every program usable to prevent crash
         [[self.header_visualizer, self.func_visualizer]] = self.get_args(
-            "type_visualizer",
-            default_value={"advanced": func}
+            "type_visualizer", default_value={"advanced": func}
         ).items()
 
     """
@@ -212,7 +233,7 @@ class Visualiser(ArgParser):
     """
 
     def visualizer(self, header):
-        # matplotlib.use("pdf")
+        matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
         self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
