@@ -142,6 +142,7 @@ class Visualiser(ArgParser):
         plt.ylabel(ylabel)
         plt.yticks([])
         plt.legend(filters, loc="upper left")
+        # don't show, just save as pdf
         plt.show()
 
     def _histogram_visualizer(self, header):
