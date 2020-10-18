@@ -125,9 +125,11 @@ class Visualiser(ArgParser):
             "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
-    @staticmethod
-    def _pick_by_elements(raw_data, filters, column_filter, feature):
-        return [raw_data.loc[raw_data[column_filter] == element, feature] for element in filters]
+    def _pick_by_elements(self, raw_data, filters, column_filter, feature):
+        try:
+            return [raw_data.loc[raw_data[column_filter] == element, feature] for element in filters]
+        except (IndexError, ValueError) as e:
+            self._exit(exception=e, message="Error while filtering data for visualiser")
 
     @staticmethod
     def _create_histogram(
@@ -153,21 +155,16 @@ class Visualiser(ArgParser):
     def _histogram_visualizer(self, header):
         figures = [self._text_page()]
         for feature in header:
-            try:
-                filtered_data = self._pick_by_elements(
-                    self.raw_data, self.houses, "Hogwarts House", feature
-                )
-                figures.append(
-                    self._create_histogram(
-                        filtered_data,
-                        title=f"Homogeneity between the four houses '{feature}",
-                        kde_label=self.houses,
-                        xlabel="Marks",
-                        ylabel="Students",
-                    )
-                )
-            except Exception as e:
-                self._exit(exception=e, message="Error while creating histogram visualizer")
+            filtered_data = self._pick_by_elements(
+                self.raw_data, self.houses, "Hogwarts House", feature
+            )
+            figures.append(self._create_histogram(
+                filtered_data,
+                title=f"Homogeneity between the four houses '{feature}",
+                kde_label=self.houses,
+                xlabel="Marks",
+                ylabel="Students",
+            ))
         self._save_as_pdf("histogram_visualizer", figures)
 
     def _pair_plot_visualizer(self, head):
