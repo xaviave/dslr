@@ -128,7 +128,9 @@ class Visualiser(ArgParser):
         }
 
     @staticmethod
-    def _create_histogram(feature, raw_data, filters, picker="Hogwarts House", xlabel="Marks", ylabel="Students"):
+    def _create_histogram(
+        feature, raw_data, filters, picker="Hogwarts House", xlabel="Marks", ylabel="Students"
+    ):
         for elem in filters:
             data = raw_data.loc[raw_data[picker] == elem, feature]
             plt.hist(data, density=True, bins=30, alpha=0.5)
@@ -206,10 +208,7 @@ class Visualiser(ArgParser):
         # could add different matplotlib backend | for now to much work
         super().__init__()
         # check this setter for every program usable to prevent crash
-        for k, v in self.get_args(
-                "type_visualizer",
-                default_value={"advanced": func}
-        ).items():
+        for k, v in self.get_args("type_visualizer", default_value={"advanced": func}).items():
             self.header_visualizer = k
             self.func_visualizer = v
 

@@ -126,7 +126,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         header_file = self.default_header_files[self.header_visualizer]
         print(self.header_visualizer)
         print(self.func_visualizer)
-        print('\n', header_file)
+        print("\n", header_file)
         # uncomment to create file for adapted visualizer
         # self._save_npy(header_file, ["", "", ""])
         self.analysed_header = self._load_npy(header_file)
