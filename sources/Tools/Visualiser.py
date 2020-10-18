@@ -61,15 +61,13 @@ class Visualiser(ArgParser):
         Private methods
     """
 
-    @staticmethod
-    def _save_as_pdf(file_name, figures):
+    def _save_as_pdf(self, file_name, figures):
         try:
             with PdfPages(f"{file_name}_{len(figures)}.pdf") as pdf:
                 for f in figures:
                     pdf.savefig(f, bbox_inches="tight")
         except Exception as e:
-            logging.error(f"{e}\nError while creating {file_name}.pdf")
-            sys.exit(-1)
+            self._exit(exception=e, message=f"Error while creating {file_name}.pdf")
 
     @staticmethod
     def _text_page():
