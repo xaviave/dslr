@@ -156,15 +156,15 @@ class Visualiser(ArgParser):
         )
         self._exit(message="Not implemented")
 
-    def _scatter_plot_visualizer(self, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        fig = plt.figure()
-        plt.scatter(
-            x=tuple(self.raw_data.loc[:, head]), y=tuple(self.raw_data.loc[:, "Hogwarts House"])
-        )
-        return fig
+    def _scatter_plot_visualizer(self, header):
+        for feature in header:
+            data = self.raw_data.loc[:, feature]
+            plt.scatter(data, data, alpha=0.5)
+        plt.title("Two similar features")
+        plt.xlabel("Marks")
+        plt.yticks([])
+        plt.legend(header, loc="upper left")
+        plt.show()
 
     @staticmethod
     def _date_visualizer(x, y):
