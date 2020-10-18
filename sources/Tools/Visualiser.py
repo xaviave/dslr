@@ -202,9 +202,10 @@ class Visualiser(ArgParser):
         # could add different matplotlib backend | for now to much work
         super().__init__()
         # check this setter for every program usable to prevent crash
-        for k, v in self.get_args("type_visualizer", default_value={"advanced": func}).items():
-            self.header_visualizer = k
-            self.func_visualizer = v
+        [[self.header_visualizer, self.func_visualizer]] = self.get_args(
+            "type_visualizer",
+            default_value={"advanced": func}
+        ).items()
 
     """
         Public methods
