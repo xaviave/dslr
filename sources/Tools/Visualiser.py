@@ -29,7 +29,7 @@ class Visualiser(ArgParser):
             "-v",
             "--visualiser",
             action="store_const",
-            const={"advanced": self._advanced_visualizer},
+            const={"name": "advanced", "func": self._advanced_visualizer},
             help="Render a tab to visualize data",
             dest="type_visualizer",
         )
@@ -37,7 +37,7 @@ class Visualiser(ArgParser):
             "-hh",
             "--histogram",
             action="store_const",
-            const={"histogram": self._histogram_visualizer},
+            const={"name": "histogram", "func": self._histogram_visualizer},
             help="Render an histogram for a specific data",
             dest="type_visualizer",
         )
@@ -45,7 +45,7 @@ class Visualiser(ArgParser):
             "-sc",
             "--scatter_plot",
             action="store_const",
-            const={"scatter": self._scatter_plot_visualizer},
+            const={"name": "scatter", "func": self._scatter_plot_visualizer},
             help="Render a scatter plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -53,7 +53,7 @@ class Visualiser(ArgParser):
             "-pp",
             "--pair_plot",
             action="store_const",
-            const={"pair": self._pair_plot_visualizer},
+            const={"name": "pair", "func": self._pair_plot_visualizer},
             help="Render a pair plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -220,13 +220,16 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
-    def __init__(self, func=_scatter_plot_visualizer):
+    def __init__(self, type_visualizer="advanced", func=_scatter_plot_visualizer):
         # could add different matplotlib backend | for now to much work
         super().__init__()
         # check this setter for every program usable to prevent crash
-        [[self.header_visualizer, self.func_visualizer]] = self.get_args(
-            "type_visualizer", default_value={"advanced": func}
-        ).items()
+        mod_visualizer = self.get_args(
+            "type_visualizer",
+            default_value={type_visualizer: func}
+        )
+        self.header_visualizer = mod_visualizer.get("name")
+        self.func_visualizer = mod_visualizer.get("func")
 
     """
         Public methods
