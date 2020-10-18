@@ -62,14 +62,13 @@ class Visualiser(ArgParser):
     """
 
     @staticmethod
-    def _save_as_pdf(file_name="data_visualizer", figures=None):
+    def _save_as_pdf(file_name, figures):
         try:
-            file_name = f"{file_name}_{len(figures)}.pdf"
-            with PdfPages(file_name) as pdf:
+            with PdfPages(f"{file_name}_{len(figures)}.pdf") as pdf:
                 for f in figures:
                     pdf.savefig(f, bbox_inches="tight")
         except Exception as e:
-            logging.error(f"{e}\nError while creating data_visualizer.pdf")
+            logging.error(f"{e}\nError while creating {file_name}.pdf")
             sys.exit(-1)
 
     @staticmethod
@@ -191,7 +190,7 @@ class Visualiser(ArgParser):
         figures = [self._text_page()]
         for head in header:
             figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
-        self._save_as_pdf(file_name="advanced_visualizer", figures=figures)
+        self._save_as_pdf("advanced_visualizer", figures)
 
     @staticmethod
     def _exit(exception=None, message="Error", mod=-1):
