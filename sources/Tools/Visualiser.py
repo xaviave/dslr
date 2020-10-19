@@ -133,9 +133,8 @@ class Visualiser(ArgParser):
         except (IndexError, ValueError) as e:
             self._exit(exception=e, message="Error while filtering data for visualiser")
 
-    @staticmethod
     def _create_histogram(
-        raw_data: list, title="Histogram", kde_label=None, xlabel="x", ylabel="y", yticks=None
+        self, raw_data: list, title="Histogram", kde_label=None, xlabel="x", ylabel="y", yticks=None
     ):
         fig = plt.figure()
         for index, data in enumerate(raw_data):
@@ -145,7 +144,10 @@ class Visualiser(ArgParser):
                 plt.xlim(mn, mx)
                 kde_xs = np.linspace(mn, mx, 301)
                 kde = st.gaussian_kde(data)
-                plt.plot(kde_xs, kde.pdf(kde_xs), label=kde_label[index])
+                try:
+                    plt.plot(kde_xs, kde.pdf(kde_xs), label=kde_label[index])
+                except IndexError:
+                    self._exit(message="Error while creating histogram")
         plt.title(title)
         plt.legend(kde_label, loc="upper left")
         plt.xlabel(xlabel)
@@ -177,15 +179,33 @@ class Visualiser(ArgParser):
         )
         self._exit(message="Not implemented")
 
+    def _create_scatter(self, x, y=None, title="Scatter", label=None, xlabel="x", ylabel=None, yticks=None):
+        fig = plt.figure()
+        for index, data in enumerate(x):
+            try:
+                plt.scatter(data, data if y is None else y[index], alpha=0.5)
+            except IndexError:
+                self._exit(message="Error while creating scatter plot")
+        plt.title(title)
+        plt.legend(label, loc="upper left")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.yticks([] if yticks is None else yticks)
+        plt.close()
+        return fig
+
     def _scatter_plot_visualizer(self, header):
-        for feature in header:
-            data = self.raw_data.loc[:, feature]
-            plt.scatter(data, data, alpha=0.5)
-        plt.title("Two similar features")
-        plt.xlabel("Marks")
-        plt.yticks([])
-        plt.legend(header, loc="upper left")
-        plt.show()
+        figures = [self._text_page()]
+        filtered_data = [self.raw_data.loc[:, feature] for feature in header]
+        figures.append(
+            self._create_scatter(
+                filtered_data,
+                title="Two similar features",
+                label=header,
+                xlabel="Marks"
+            )
+        )
+        self._save_as_pdf("scatter_visualizer", figures)
 
     @staticmethod
     def _date_visualizer(x, y):
