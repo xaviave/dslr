@@ -1,5 +1,4 @@
 import os
-import sys
 import logging
 
 import numpy as np
@@ -20,7 +19,13 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     analysed_header: np.array
     csv_file_name: str
     default_dataset: str = os.path.join("data", "datasets", "dataset_train.csv")
-    default_header_file: str = os.path.join("sources", "Resources", "analysed_header.npy")
+    resources_dir = os.path.join("sources", "Resources")
+    default_header_files: dict = {
+        "advanced": os.path.join(resources_dir, "analysed_header.npy"),
+        "histogram": os.path.join(resources_dir, "histogram_header.npy"),
+        "scatter": os.path.join(resources_dir, "scatter_header.npy"),
+        "pair": os.path.join(resources_dir, "pair_header.npy"),
+    }
 
     """
         Override methods
@@ -70,7 +75,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Well choose headers from a list of header in a dataset is the main data analysis part
         this function is oriented for machine learning programs
         """
-        self.load_header()
+        self.load_header(self.default_header_files[self.header_visualizer])
         self.header = list(self.raw_data.columns.values)
         if not all(h in self.header for h in self.analysed_header):
             self._exit(message="CSV file header doesn't contain enough data to analyse the dataset")
@@ -113,10 +118,10 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         Public methods
     """
 
-    def save_header(self, header_file: str = default_header_file):
-        self._save_npy(header_file, self.analysed_header)
+    def save_header(self, header_list: list, header_file: str = default_header_files["advanced"]):
+        self._save_npy(header_file, header_list)
 
-    def load_header(self, header_file: str = default_header_file):
+    def load_header(self, header_file: str = default_header_files["advanced"]):
         self.analysed_header = self._load_npy(header_file)
 
     def describe(self, **kwargs):
@@ -132,7 +137,6 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
 
     def visualize(self):
         if self.get_args("type_visualizer") is not None:
-            self.describe(headers=list(self.analysed_header), slice_print=4)
             self.visualizer(self.analysed_header)
 
     def write_to_csv(self, file_name: str, dataset: list, columns: list):

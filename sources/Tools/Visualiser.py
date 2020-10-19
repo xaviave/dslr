@@ -1,11 +1,11 @@
 import inspect
 import logging
 import sys
-
 import matplotlib
 
 import numpy as np
 import pandas as pd
+import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_pdf import PdfPages
@@ -17,6 +17,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class Visualiser(ArgParser):
     raw_data: pd.DataFrame
+    houses: np.ndarray
 
     """
         Override methods
@@ -28,7 +29,7 @@ class Visualiser(ArgParser):
             "-v",
             "--visualiser",
             action="store_const",
-            const=self._advanced_visualizer,
+            const={"name": "advanced", "func": self._advanced_visualizer},
             help="Render a tab to visualize data",
             dest="type_visualizer",
         )
@@ -36,7 +37,7 @@ class Visualiser(ArgParser):
             "-hh",
             "--histogram",
             action="store_const",
-            const=self._histogram_visualizer,
+            const={"name": "histogram", "func": self._histogram_visualizer},
             help="Render an histogram for a specific data",
             dest="type_visualizer",
         )
@@ -44,7 +45,7 @@ class Visualiser(ArgParser):
             "-sc",
             "--scatter_plot",
             action="store_const",
-            const=self._scatter_plot_visualizer,
+            const={"name": "scatter", "func": self._scatter_plot_visualizer},
             help="Render a scatter plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -52,7 +53,7 @@ class Visualiser(ArgParser):
             "-pp",
             "--pair_plot",
             action="store_const",
-            const=self._pair_plot_visualizer,
+            const={"name": "pair", "func": self._pair_plot_visualizer},
             help="Render a pair plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -61,15 +62,13 @@ class Visualiser(ArgParser):
         Private methods
     """
 
-    @staticmethod
-    def _save_as_pdf(figures):
+    def _save_as_pdf(self, file_name, figures):
         try:
-            with PdfPages(f"data_visualizer{len(figures)}.pdf") as pdf:
+            with PdfPages(f"{file_name}_{len(figures) - 1}.pdf") as pdf:
                 for f in figures:
                     pdf.savefig(f, bbox_inches="tight")
         except Exception as e:
-            logging.error(f"{e}\nError while creating data_visualizer{len(figures)}.pdf")
-            sys.exit(-1)
+            self._exit(exception=e, message=f"Error while creating {file_name}.pdf")
 
     @staticmethod
     def _text_page():
@@ -126,25 +125,51 @@ class Visualiser(ArgParser):
             "left": [(stat[index] == "Left").sum() for index in range(4)],
         }
 
-    def _histogram_visualizer(self, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        hands = self._process_bar_data(self.raw_data, head)
-        houses = set(self.raw_data.loc[:, "Hogwarts House"])
-        x = np.arange(len(houses))
-        width = 0.35
-        fig, ax = plt.subplots()
-        # print(hands)
-        rects1 = ax.bar(x - width / 2, hands["right"], width, label="Right")
-        rects2 = ax.bar(x + width / 2, hands["left"], width, label="Left")
-        ax.set_xticks(x)
-        ax.set_xticklabels(houses)
-        ax.legend()
-        self._auto_label(ax, rects1)
-        self._auto_label(ax, rects2)
-        fig.tight_layout()
+    def _pick_by_elements(self, raw_data, filters, column_filter, feature):
+        try:
+            return [
+                raw_data.loc[raw_data[column_filter] == element, feature] for element in filters
+            ]
+        except (IndexError, ValueError) as e:
+            self._exit(exception=e, message="Error while filtering data for visualiser")
+
+    @staticmethod
+    def _create_histogram(
+        raw_data: list, title="Histogram", kde_label=None, xlabel="x", ylabel="y", yticks=None
+    ):
+        fig = plt.figure()
+        for index, data in enumerate(raw_data):
+            plt.hist(data, density=True, bins=30, alpha=0.5)
+            if kde_label is not None:
+                mn, mx = plt.xlim()
+                plt.xlim(mn, mx)
+                kde_xs = np.linspace(mn, mx, 301)
+                kde = st.gaussian_kde(data)
+                plt.plot(kde_xs, kde.pdf(kde_xs), label=kde_label[index])
+        plt.title(title)
+        plt.legend(kde_label, loc="upper left")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.yticks([] if yticks is None else yticks)
+        plt.close()
         return fig
+
+    def _histogram_visualizer(self, header):
+        figures = [self._text_page()]
+        for feature in header:
+            filtered_data = self._pick_by_elements(
+                self.raw_data, self.houses, "Hogwarts House", feature
+            )
+            figures.append(
+                self._create_histogram(
+                    filtered_data,
+                    title=f"Homogeneity between the four houses '{feature}",
+                    kde_label=self.houses,
+                    xlabel="Marks",
+                    ylabel="Students",
+                )
+            )
+        self._save_as_pdf("histogram_visualizer", figures)
 
     def _pair_plot_visualizer(self, head):
         logging.warning(
@@ -187,7 +212,7 @@ class Visualiser(ArgParser):
         figures = [self._text_page()]
         for head in header:
             figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
-        self._save_as_pdf(figures)
+        self._save_as_pdf("advanced_visualizer", figures)
 
     @staticmethod
     def _exit(exception=None, message="Error", mod=-1):
@@ -196,10 +221,13 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
-    def __init__(self, func=_scatter_plot_visualizer):
-        # could add different matplotlib backend | for now to much work
+    def __init__(self, type_visualizer="advanced", func=_scatter_plot_visualizer):
         super().__init__()
-        self.visualizer_func = self.get_args("type_visualizer", default_value=func)
+        mod_visualizer = self.get_args(
+            "type_visualizer", default_value={"name": type_visualizer, "func": func}
+        )
+        self.header_visualizer = mod_visualizer.get("name")
+        self.func_visualizer = mod_visualizer.get("func")
 
     """
         Public methods
@@ -209,4 +237,5 @@ class Visualiser(ArgParser):
         matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
-        self.visualizer_func(header)
+        self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
+        self.func_visualizer(header)
