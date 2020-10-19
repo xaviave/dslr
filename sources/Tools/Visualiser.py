@@ -64,7 +64,7 @@ class Visualiser(ArgParser):
 
     def _save_as_pdf(self, file_name, figures):
         try:
-            with PdfPages(f"{file_name}_{len(figures)}.pdf") as pdf:
+            with PdfPages(f"{file_name}_{len(figures) - 1}.pdf") as pdf:
                 for f in figures:
                     pdf.savefig(f, bbox_inches="tight")
         except Exception as e:
@@ -127,7 +127,9 @@ class Visualiser(ArgParser):
 
     def _pick_by_elements(self, raw_data, filters, column_filter, feature):
         try:
-            return [raw_data.loc[raw_data[column_filter] == element, feature] for element in filters]
+            return [
+                raw_data.loc[raw_data[column_filter] == element, feature] for element in filters
+            ]
         except (IndexError, ValueError) as e:
             self._exit(exception=e, message="Error while filtering data for visualiser")
 
@@ -158,13 +160,15 @@ class Visualiser(ArgParser):
             filtered_data = self._pick_by_elements(
                 self.raw_data, self.houses, "Hogwarts House", feature
             )
-            figures.append(self._create_histogram(
-                filtered_data,
-                title=f"Homogeneity between the four houses '{feature}",
-                kde_label=self.houses,
-                xlabel="Marks",
-                ylabel="Students",
-            ))
+            figures.append(
+                self._create_histogram(
+                    filtered_data,
+                    title=f"Homogeneity between the four houses '{feature}",
+                    kde_label=self.houses,
+                    xlabel="Marks",
+                    ylabel="Students",
+                )
+            )
         self._save_as_pdf("histogram_visualizer", figures)
 
     def _pair_plot_visualizer(self, head):
@@ -218,12 +222,9 @@ class Visualiser(ArgParser):
         sys.exit(mod)
 
     def __init__(self, type_visualizer="advanced", func=_scatter_plot_visualizer):
-        # could add different matplotlib backend | for now to much work
         super().__init__()
-        # check this setter for every program usable to prevent crash
         mod_visualizer = self.get_args(
-            "type_visualizer",
-            default_value={type_visualizer: func}
+            "type_visualizer", default_value={"name": type_visualizer, "func": func}
         )
         self.header_visualizer = mod_visualizer.get("name")
         self.func_visualizer = mod_visualizer.get("func")
