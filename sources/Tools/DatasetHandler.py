@@ -121,12 +121,10 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
     def save_header(self, header_file: str = default_header_files["advanced"]):
         self._save_npy(header_file, self.analysed_header)
 
-    def load_header(self):
+    def load_header(self, header_file=None):
         # test if not crash with all program
-        header_file = self.default_header_files[self.header_visualizer]
-        print(self.header_visualizer)
-        print(self.func_visualizer)
-        print("\n", header_file)
+        if header_file is None:
+            header_file = self.default_header_files[self.header_visualizer]
         # uncomment to create file for adapted visualizer
         # self._save_npy(header_file, ["", "", ""])
         self.analysed_header = self._load_npy(header_file)
