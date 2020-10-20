@@ -1,12 +1,12 @@
 import inspect
 import logging
 import sys
-import matplotlib
 
 import numpy as np
 import pandas as pd
 import scipy.stats as st
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -53,7 +53,7 @@ class Visualiser(ArgParser):
             "-pp",
             "--pair_plot",
             action="store_const",
-            const={"name": "pair", "func": self._pair_plot_visualizer},
+            const={"name": "advanced", "func": self._pair_plot_visualizer},
             help="Render a pair plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -173,11 +173,17 @@ class Visualiser(ArgParser):
             )
         self._save_as_pdf("histogram_visualizer", figures)
 
-    def _pair_plot_visualizer(self, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+    def _pair_plot_visualizer(self, header):
+        g = sns.pairplot(
+            self.raw_data,
+            hue="Hogwarts House",
+            diag_kind="hist",
+            vars=header,
         )
-        self._exit(message="Not implemented")
+        g.map_lower(sns.kdeplot, levels=4, color=".2")
+        # g.fig.set_figwidth(14)
+        # g.fig.set_figheight(8)
+        plt.show()
 
     def _create_scatter(self, x, y=None, title="Scatter", label=None, xlabel="x", ylabel=None, yticks=None):
         fig = plt.figure()
@@ -254,7 +260,7 @@ class Visualiser(ArgParser):
     """
 
     def visualizer(self, header):
-        matplotlib.use("pdf")
+        sns.set()
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
         self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
