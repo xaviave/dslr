@@ -2,7 +2,7 @@ from Tools.DatasetHandler import DatasetHandler
 
 
 def main():
-    dataset = DatasetHandler()
+    dataset = DatasetHandler(parse=True)
     dataset.describe()
 
 
