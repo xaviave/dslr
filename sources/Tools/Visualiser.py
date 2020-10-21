@@ -1,4 +1,3 @@
-import inspect
 import logging
 import sys
 
@@ -97,34 +96,6 @@ class Visualiser(ArgParser):
         plt.axis("off")
         return fig
 
-    @staticmethod
-    def _auto_label(ax, rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate(
-                f"{height}",
-                xy=(rect.get_x() + rect.get_width() / 2, height),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
-
-    @staticmethod
-    def _process_bar_data(raw_data, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        stat = [
-            raw_data.loc[lambda df: df["Hogwarts House"] == house, head]
-            for house in ["Slytherin", "Ravenclaw", "Gryffindor", "Hufflepuff"]
-        ]
-        return {
-            "right": [(stat[index] == "Right").sum() for index in range(4)],
-            "left": [(stat[index] == "Left").sum() for index in range(4)],
-        }
-
     def _pick_by_elements(self, raw_data, filters, column_filter, feature):
         try:
             return [
@@ -173,17 +144,19 @@ class Visualiser(ArgParser):
             )
         self._save_as_pdf("histogram_visualizer", figures)
 
-    def _pair_plot_visualizer(self, header):
+    def _pair_plot_visualizer(self, header, hue="Hogwarts House", map_lower=False):
         g = sns.pairplot(
             self.raw_data,
-            hue="Hogwarts House",
+            hue=hue,
             diag_kind="hist",
-            vars=header,
+            vars=header
         )
-        g.map_lower(sns.kdeplot, levels=4, color=".2")
-        # g.fig.set_figwidth(14)
-        # g.fig.set_figheight(8)
-        plt.show()
+        if map_lower is True:
+            g.map_lower(sns.kdeplot, levels=4, color=".2")
+        try:
+            plt.savefig(f"pair_plot_{len(header)}.pdf")
+        except Exception as e:
+            self._exit(exception=e, message="Error while saving pair_plot.pdf")
 
     def _create_scatter(self, x, y=None, title="Scatter", label=None, xlabel="x", ylabel=None, yticks=None):
         fig = plt.figure()
@@ -213,26 +186,9 @@ class Visualiser(ArgParser):
         )
         self._save_as_pdf("scatter_visualizer", figures)
 
-    @staticmethod
-    def _date_visualizer(x, y):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        fig = plt.figure()
-        plt.subplot(x, y)
-        return fig
-
-    @staticmethod
-    def _update_tab(head, func):
-        fig = func(head)
-        plt.title(f"Hogwarts House compared to '{head}")
-        plt.close()
-        return fig
-
+    # deprecated
     def _advanced_visualizer(self, header):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
+        self._exit(message="Deprecated method")
         logging.info("Creating tabs in pdf...")
         func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
         figures = [self._text_page()]
