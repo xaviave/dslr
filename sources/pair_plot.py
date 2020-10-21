@@ -4,4 +4,4 @@ import os
 # pour entrainer votre prochaine regression logistique ?
 
 if "__main__" == __name__:
-    os.system("python3 sources/main.py spe_visualiser -pp")
+    os.system("python3 sources/main.py -pp")

@@ -134,5 +134,8 @@ dmypy.json
 # Generated PDF
 *.pdf
 
+# Generated PNG
+*.png
+
 # numpy files data
 *.npy

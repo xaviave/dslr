@@ -1,12 +1,11 @@
-import inspect
 import logging
 import sys
-import matplotlib
 
 import numpy as np
 import pandas as pd
 import scipy.stats as st
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -25,14 +24,6 @@ class Visualiser(ArgParser):
 
     def _add_exclusive_args(self, parser):
         visualiser_group = parser.add_mutually_exclusive_group(required=False)
-        visualiser_group.add_argument(
-            "-v",
-            "--visualiser",
-            action="store_const",
-            const={"name": "advanced", "func": self._advanced_visualizer},
-            help="Render a tab to visualize data",
-            dest="type_visualizer",
-        )
         visualiser_group.add_argument(
             "-hh",
             "--histogram",
@@ -97,34 +88,6 @@ class Visualiser(ArgParser):
         plt.axis("off")
         return fig
 
-    @staticmethod
-    def _auto_label(ax, rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate(
-                f"{height}",
-                xy=(rect.get_x() + rect.get_width() / 2, height),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
-
-    @staticmethod
-    def _process_bar_data(raw_data, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        stat = [
-            raw_data.loc[lambda df: df["Hogwarts House"] == house, head]
-            for house in ["Slytherin", "Ravenclaw", "Gryffindor", "Hufflepuff"]
-        ]
-        return {
-            "right": [(stat[index] == "Right").sum() for index in range(4)],
-            "left": [(stat[index] == "Left").sum() for index in range(4)],
-        }
-
     def _pick_by_elements(self, raw_data, filters, column_filter, feature):
         try:
             return [
@@ -173,11 +136,19 @@ class Visualiser(ArgParser):
             )
         self._save_as_pdf("histogram_visualizer", figures)
 
-    def _pair_plot_visualizer(self, head):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
+    def _pair_plot_visualizer(self, header, hue="Hogwarts House", map_lower=False):
+        g = sns.pairplot(
+            self.raw_data,
+            hue=hue,
+            vars=header,
+            plot_kws={"edgecolor": "none"}
         )
-        self._exit(message="Not implemented")
+        if map_lower is True:
+            g.map_lower(sns.kdeplot, levels=4, color=".2")
+        try:
+            plt.savefig(f"pair_plot_{len(header)}.png", dpi=60)
+        except Exception as e:
+            self._exit(exception=e, message="Error while saving pair_plot.pdf")
 
     def _create_scatter(self, x, y=None, title="Scatter", label=None, xlabel="x", ylabel=None, yticks=None):
         fig = plt.figure()
@@ -208,40 +179,13 @@ class Visualiser(ArgParser):
         self._save_as_pdf("scatter_visualizer", figures)
 
     @staticmethod
-    def _date_visualizer(x, y):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        fig = plt.figure()
-        plt.subplot(x, y)
-        return fig
-
-    @staticmethod
-    def _update_tab(head, func):
-        fig = func(head)
-        plt.title(f"Hogwarts House compared to '{head}")
-        plt.close()
-        return fig
-
-    def _advanced_visualizer(self, header):
-        logging.warning(
-            f"{inspect.currentframe().f_code.co_name}:Need to be refactor - No hard coded data please"
-        )
-        logging.info("Creating tabs in pdf...")
-        func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
-        figures = [self._text_page()]
-        for head in header:
-            figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
-        self._save_as_pdf("advanced_visualizer", figures)
-
-    @staticmethod
     def _exit(exception=None, message="Error", mod=-1):
         if exception:
             logging.error(f"{exception}")
         logging.error(f"{message}")
         sys.exit(mod)
 
-    def __init__(self, type_visualizer="advanced", func=_scatter_plot_visualizer):
+    def __init__(self, type_visualizer="pair", func=_pair_plot_visualizer):
         super().__init__()
         mod_visualizer = self.get_args(
             "type_visualizer", default_value={"name": type_visualizer, "func": func}
@@ -254,8 +198,9 @@ class Visualiser(ArgParser):
     """
 
     def visualizer(self, header):
-        matplotlib.use("pdf")
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
+        sns.set()
         self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
+        logging.info("Creating tabs in file...")
         self.func_visualizer(header)
