@@ -146,7 +146,7 @@ class Visualiser(ArgParser):
         if map_lower is True:
             g.map_lower(sns.kdeplot, levels=4, color=".2")
         try:
-            plt.savefig(f"pair_plot_{len(header)}.pdf")
+            plt.savefig(f"pair_plot_{len(header)}.png")
         except Exception as e:
             self._exit(exception=e, message="Error while saving pair_plot.pdf")
 
@@ -202,5 +202,5 @@ class Visualiser(ArgParser):
             self._exit(message="Please init raw_data")
         sns.set()
         self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
-        logging.info("Creating tabs in pdf...")
+        logging.info("Creating tabs in file...")
         self.func_visualizer(header)
