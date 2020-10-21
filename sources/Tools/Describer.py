@@ -40,6 +40,8 @@ class Describer:
     def _max(**kwargs):
         maximum = kwargs.get("array")[0]
         for value in kwargs.get("array"):
+            if type(value) is str and value.isalpha():
+                return "NaN"
             if value > maximum:
                 maximum = value
         return maximum
@@ -48,6 +50,8 @@ class Describer:
     def _min(**kwargs):
         minimum = kwargs.get("array")[0]
         for value in kwargs.get("array"):
+            if type(value) is str and value.isalpha():
+                return "NaN"
             if value < minimum:
                 minimum = value
         return minimum
