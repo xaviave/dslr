@@ -148,8 +148,8 @@ class Visualiser(ArgParser):
         g = sns.pairplot(
             self.raw_data,
             hue=hue,
-            diag_kind="hist",
-            vars=header
+            vars=header,
+            plot_kws={"edgecolor": "none"}
         )
         if map_lower is True:
             g.map_lower(sns.kdeplot, levels=4, color=".2")
