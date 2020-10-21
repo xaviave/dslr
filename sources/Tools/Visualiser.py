@@ -146,7 +146,7 @@ class Visualiser(ArgParser):
         if map_lower is True:
             g.map_lower(sns.kdeplot, levels=4, color=".2")
         try:
-            plt.savefig(f"pair_plot_{len(header)}.png")
+            plt.savefig(f"pair_plot_{len(header)}.png", dpi=60)
         except Exception as e:
             self._exit(exception=e, message="Error while saving pair_plot.pdf")
 
