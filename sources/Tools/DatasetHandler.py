@@ -24,6 +24,7 @@ class DatasetHandler(Visualiser, ArgParser, Describer):
         "advanced": os.path.join(resources_dir, "analysed_header.npy"),
         "histogram": os.path.join(resources_dir, "histogram_header.npy"),
         "scatter": os.path.join(resources_dir, "scatter_header.npy"),
+        "pair": os.path.join(resources_dir, "pair_header.npy"),
     }
 
     """

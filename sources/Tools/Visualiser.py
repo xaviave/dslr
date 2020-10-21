@@ -25,14 +25,6 @@ class Visualiser(ArgParser):
     def _add_exclusive_args(self, parser):
         visualiser_group = parser.add_mutually_exclusive_group(required=False)
         visualiser_group.add_argument(
-            "-v",
-            "--visualiser",
-            action="store_const",
-            const={"name": "advanced", "func": self._advanced_visualizer},
-            help="Render a tab to visualize data",
-            dest="type_visualizer",
-        )
-        visualiser_group.add_argument(
             "-hh",
             "--histogram",
             action="store_const",
@@ -52,7 +44,7 @@ class Visualiser(ArgParser):
             "-pp",
             "--pair_plot",
             action="store_const",
-            const={"name": "advanced", "func": self._pair_plot_visualizer},
+            const={"name": "pair", "func": self._pair_plot_visualizer},
             help="Render a pair plot graph for a specific data",
             dest="type_visualizer",
         )
@@ -186,16 +178,6 @@ class Visualiser(ArgParser):
         )
         self._save_as_pdf("scatter_visualizer", figures)
 
-    # deprecated
-    def _advanced_visualizer(self, header):
-        self._exit(message="Deprecated method")
-        logging.info("Creating tabs in pdf...")
-        func = {"Best Hand": self._histogram_visualizer, "Birthday": self._date_visualizer}
-        figures = [self._text_page()]
-        for head in header:
-            figures.append(self._update_tab(head, func.get(head, self._scatter_plot_visualizer)))
-        self._save_as_pdf("advanced_visualizer", figures)
-
     @staticmethod
     def _exit(exception=None, message="Error", mod=-1):
         if exception:
@@ -203,7 +185,7 @@ class Visualiser(ArgParser):
         logging.error(f"{message}")
         sys.exit(mod)
 
-    def __init__(self, type_visualizer="advanced", func=_scatter_plot_visualizer):
+    def __init__(self, type_visualizer="pair", func=_pair_plot_visualizer):
         super().__init__()
         mod_visualizer = self.get_args(
             "type_visualizer", default_value={"name": type_visualizer, "func": func}
@@ -216,8 +198,9 @@ class Visualiser(ArgParser):
     """
 
     def visualizer(self, header):
-        sns.set()
         if self.raw_data.empty:
             self._exit(message="Please init raw_data")
+        sns.set()
         self.houses = np.unique(self.raw_data.loc[:, "Hogwarts House"])
+        logging.info("Creating tabs in pdf...")
         self.func_visualizer(header)
